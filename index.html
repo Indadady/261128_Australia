@@ -1,658 +1,1361 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-smooth">
 <head>
+    <!-- 🚨 Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JLH9GD9SVR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JLH9GD9SVR');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="2026 영월신천초 호주 시드니 문화체험 스마트 가이드북">
-    <meta property="og:description" content="영월신천초등학교 시드니 4박 6일 확정 일정표 및 안내 가이드 | 11/28~12/3">
+    <title>[신천초] 시드니 문화체험 4박 6일 - 스마트 가이드</title>
+    
+    <!-- SEO & Open Graph -->
+    <meta name="description" content="영월신천초등학교 시드니 4박 6일 문화체험 공식 스마트 가이드북">
+    <meta property="og:title" content="[신천초] 🇦🇺 호주 시드니 탐방 공식 가이드북">
+    <meta property="og:description" content="담당 선생님 및 학부모님께 공유드리는 상세 일정 및 교육 프로그램 안내입니다.">
     <meta property="og:image" content="https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1200&h=630&q=85">
 
-    <title>2026 영월신천초 호주(시드니) 일정 가이드 | TOURMAKER</title>
-    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    
+    <!-- Leaflet CSS & JS (Map) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .hero-bg {
-            background: linear-gradient(rgba(15,23,42,0.65), rgba(6,78,59,0.55)),
-                url('https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1920&q=80');
-            background-size: cover; background-position: center;
+        
+        .hero-bg { 
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed;
         }
-        .nav-link { transition: all 0.3s; }
-        .nav-link:hover { color: #10b981; border-bottom-color: #10b981; }
-        .schedule-table th { white-space: nowrap; }
-        .schedule-table td { vertical-align: middle; }
-        .schedule-table tr:hover { background-color: rgba(241,245,249,0.8); }
-        html { scroll-behavior: smooth; }
+        @media (max-width: 768px){ .hero-bg { background-attachment: scroll; } }
         
-        .day-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .day-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-        .day-connector { position: absolute; top: 32px; right: -16px; width: 32px; height: 2px; background: #cbd5e1; z-index: 5; }
-        @media(max-width:1024px) { .day-connector { display: none; } }
+        #map { height: 500px; width: 100%; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 10; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        .solid-path { stroke-dasharray: 4000; stroke-dashoffset: 4000; animation: drawPath 4.5s ease-in forwards; }
-        @keyframes drawPath { to { stroke-dashoffset: 0; } }
+        .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .map-marker-custom {
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; color: white; border: 2px solid white;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); font-size: 14px;
+        /* 지도 마커 팝인 애니메이션 */
+        @keyframes popIn {
+            0% { transform: scale(0) translateY(15px); opacity: 0; }
+            80% { transform: scale(1.1) translateY(-2px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
-        .leaflet-container { z-index: 1 !important; }
+        .map-marker-anim { opacity: 0; }
         
-        .notepad {
-            background-color: #fef9c3;
-            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 2rem; line-height: 2rem;
-            border-left: 4px solid #10b981; box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+        section { scroll-margin-top: 80px; }
+        
+        .timeline-dot {
+            position: absolute; left: -25px; top: 4px; width: 16px; height: 16px;
+            border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px var(--tw-ring-color);
+            background-color: var(--tw-bg-color);
         }
-        .notepad:focus { outline: none; background-color: #fef08a; }
-        
-        .highlight-text {
-            background: linear-gradient(120deg, rgba(167, 243, 208, 0.5) 0%, rgba(167, 243, 208, 0.5) 100%);
-            background-repeat: no-repeat;
-            background-size: 100% 40%;
-            background-position: 0 80%;
+
+        /* 🖨️ 인쇄 최적화 (투어메이커 표준 결재 서류 양식) */
+        @media print {
+            @page { size: A4 portrait; margin: 12mm 10mm; }
+            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: white !important; color: black !important; }
+            
+            /* 웹 전용 UI 모두 숨김 */
+            header, footer, section:not(#print-area), .no-print, #phrase-modal { display: none !important; }
+            
+            /* 프린트 영역 활성화 및 여백 초기화 */
+            main, body { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; background: white !important; }
+            #print-area { display: block !important; width: 100%; }
+
+            /* 헤더 디자인 */
+            .print-header-top { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #004098; padding-bottom: 10px; margin-bottom: 15px; }
+            .print-header-top img { height: 35px; }
+            .print-doc-no { font-size: 12px; color: #555; }
+            .print-title { text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 15px; font-family: 'Nanum Myeongjo', serif; }
+            
+            /* 개요 박스 */
+            .print-overview { display: flex; justify-content: space-between; background-color: #f8fafc !important; border: 1px solid #94a3b8 !important; border-radius: 6px; padding: 10px 15px; margin-bottom: 15px; font-size: 13px; }
+            .print-overview .label { font-weight: bold; color: #004098; margin-right: 5px; }
+
+            /* 표 규격화 */
+            #print-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; word-break: keep-all !important; border: 2px solid #1e293b !important; font-size: 11px; }
+            #print-table th, #print-table td { border: 1px solid #1e293b !important; padding: 6px 8px !important; }
+            #print-table th { background-color: #f8fafc !important; font-weight: bold; text-align: center; }
+            
+            /* 비율: 일차(11%), 상세일정(75%), 식사(14%) */
+            #print-table colgroup col:nth-child(1) { width: 11% !important; }
+            #print-table colgroup col:nth-child(2) { width: 75% !important; }
+            #print-table colgroup col:nth-child(3) { width: 14% !important; }
+            
+            #print-table td:nth-child(1) { text-align: center; vertical-align: top; background-color: #f8fafc !important; font-weight: bold; }
+            #print-table td:nth-child(2) { vertical-align: top; line-height: 1.4; }
+            #print-table td:nth-child(3) { text-align: center; vertical-align: middle; font-size: 11px; }
+
+            tr { page-break-inside: avoid; }
+            #print-table tbody tr:first-child td { border-top: 2px solid #1e293b !important; }
+            
+            /* 내부 콘텐츠 스타일링 */
+            .tm-time-flow { font-size: 11px !important; margin-bottom: 4px !important; font-weight: bold; }
+            .tm-time-tag { color: #004098; margin-right: 5px; }
+            .tm-highlight { font-weight: 700; color: #000; }
+            
+            .tm-desc-list { list-style: none; margin: 4px 0 !important; padding-left: 5px; }
+            .tm-desc-list li { position: relative; padding-left: 12px; margin-bottom: 3px !important; line-height: 1.3; color: #000; }
+            .tm-desc-list li::before { content: '■'; font-size: 8px; position: absolute; left: 0; top: 3px; color: #004098; }
+            
+            .tm-hotel-divider { border: 0; border-top: 1px dashed #94a3b8; margin: 6px 0 4px 0; }
+            .tm-hotel-info { font-size: 11px !important; color: #000; font-weight: bold;}
+            
+            /* 하단 직인 영역 */
+            .print-footer-area { margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; border-top: 1px solid #ccc; padding-top: 10px; }
+            .print-footer-area .manager { font-weight: bold; border-left: 3px solid #004098; padding-left: 8px; }
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased pb-20 md:pb-0 print:pb-0 print:bg-white">
 
-<header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50">
-    <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            <div class="flex-shrink-0 flex items-center gap-3">
-                <a href="http://tourmaker.kr" target="_blank" rel="noopener">
-                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHfgIX70O5k6Anuo0UgALIdaG9jSga9auHu3uyz0uEirylGPAJnjN_qQbvEGMUvPqUQf_g9FMNUHRxlDcUBf4vZ3Mpy4TnA9WxbmzWYK11gt2zuy_Irl4wctNFjcjLyPo0GPXV792o_J7L9guRMuDfeC1gy7USwywjYbECZgzcsHybuGRRAXAnO1eNmP8/s320/logo.png" alt="Tourmaker" class="h-8 w-auto">
-                </a>
-                <div id="d-day-badge" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Calculating...</div>
-            </div>
-            <div class="hidden md:block">
-                <div class="ml-6 flex items-baseline space-x-4 text-sm font-medium">
-                    <a href="#intro" class="nav-link px-2 py-2 border-b-2 border-transparent">개요</a>
-                    <a href="#info" class="nav-link px-2 py-2 border-b-2 border-transparent">항공/숙박</a>
-                    <a href="#schedule" class="nav-link px-2 py-2 border-b-2 border-transparent text-emerald-600 font-bold">확정일정</a>
-                    <a href="#map-section" class="nav-link px-2 py-2 border-b-2 border-transparent">동선지도</a>
-                    <a href="#mynote" class="nav-link px-2 py-2 border-b-2 border-transparent">체크리스트</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-    <div class="md:hidden overflow-x-auto whitespace-nowrap bg-slate-50 border-b border-slate-200">
-        <div class="flex px-4 py-2 space-x-4 text-xs font-medium text-slate-600">
-            <a href="#intro">개요</a><a href="#info">항공/숙박</a><a href="#schedule" class="text-emerald-600 font-bold">일정표</a>
-            <a href="#map-section">지도</a><a href="#mynote">체크리스트</a>
-        </div>
-    </div>
-</header>
-
-<main>
-<section id="intro" class="hero-bg text-white text-center flex items-center justify-center min-h-[65vh] relative py-12">
-    <div class="container mx-auto px-4 z-10">
-        <div class="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 px-4 py-2 rounded-full text-xs md:text-sm font-bold mb-6 text-emerald-50">
-            <i class="fa-solid fa-check-circle text-emerald-400"></i> 코스 확정 완료
-        </div>
-        <h1 class="text-3xl md:text-5xl lg:text-6xl font-black mb-5 leading-tight drop-shadow-xl break-keep">
-            영월신천초등학교<br>
-            <span class="text-emerald-300">시드니 문화체험 일정안내</span>
-        </h1>
-        <p class="max-w-2xl mx-auto text-slate-100 text-base md:text-lg leading-relaxed mb-8 break-keep drop-shadow">
-            선생님, 학부모님, 학생들의 의견을 모아 <strong>호주 시드니 4박 6일</strong> 코스로 최종 결정되었습니다.<br class="hidden md:block">
-            아름다운 항구 도시 시드니에서 잊지 못할 배움과 추억을 선사하겠습니다.
-        </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-3 max-w-2xl mx-auto font-bold text-sm md:text-base">
-            <div class="bg-emerald-600 px-5 py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
-                <i class="fa-regular fa-calendar-check"></i> 2026. 11. 28(토) ~ 12. 3(목)
-            </div>
-            <div class="bg-white/95 text-slate-800 px-5 py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
-                <i class="fa-solid fa-users"></i> 총 13명 (학생 11명 + 인솔 2명)
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="info" class="py-16 bg-white border-b border-slate-200 -mt-6 rounded-t-[2.5rem] shadow-[0_-8px_30px_rgba(0,0,0,0.1)] relative z-10">
-    <div class="container mx-auto px-4 max-w-5xl">
-        <div class="text-center mb-10">
-            <span class="text-emerald-600 font-bold tracking-wider text-xs uppercase">Key Information</span>
-            <h2 class="text-2xl md:text-3xl font-bold mt-2">핵심 안내 사항</h2>
-        </div>
+    <!-- 화면 표출 영역 (인쇄 시 숨김) -->
+    <div class="print:hidden">
         
-        <div class="grid md:grid-cols-2 gap-6">
-            <!-- Flight Card -->
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 hover:border-emerald-300 transition">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-plane-departure text-blue-500 mr-2"></i> 항공편 (대한항공)</h3>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/KoreanAir_logo.svg/1200px-KoreanAir_logo.svg.png" alt="Korean Air" class="h-4 opacity-70">
-                </div>
-                <div class="space-y-4">
-                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-slate-500 font-bold block mb-1">출국 (11/28 토)</span>
-                            <span class="font-black text-blue-700 text-lg">KE 401</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block font-bold text-slate-800">ICN 18:55 출발</span>
-                            <span class="text-xs text-slate-500">인천 국제공항</span>
-                        </div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-slate-500 font-bold block mb-1">귀국 (12/03 목)</span>
-                            <span class="font-black text-blue-700 text-lg">KE 402</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block font-bold text-slate-800">SYD 09:10 출발</span>
-                            <span class="text-xs text-slate-500">시드니 킹스포드 스미스 공항</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hotel & Trans Card -->
-            <div class="flex flex-col gap-6">
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 hover:border-emerald-300 transition flex-1">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4"><i class="fa-solid fa-hotel text-indigo-500 mr-2"></i> 숙박 안내</h3>
-                    <div class="flex gap-4">
-                        <div class="w-1/3 bg-slate-200 rounded-lg overflow-hidden h-24">
-                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80" alt="Hotel" class="w-full h-full object-cover">
-                        </div>
-                        <div class="w-2/3 flex flex-col justify-center">
-                            <p class="font-black text-slate-800 text-lg leading-tight mb-1">Crowne Plaza<br>Macquarie Park</p>
-                            <p class="text-xs text-slate-500 mb-2">4성급 (또는 동급) · 총 7개 룸</p>
-                            <span class="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded w-fit">조식 포함</span>
-                        </div>
-                    </div>
+        <!-- Header -->
+        <header class="bg-white/95 backdrop-blur-md shadow-md sticky top-0 z-[60] transition-all duration-300 border-b-2 border-blue-600">
+            <nav class="container mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3 shrink-0">
+                    <a href="http://tourmaker.kr" target="_blank">
+                        <!-- 투어메이커 필수 로고 -->
+                        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHfgIX70O5k6Anuo0UgALIdaG9jSga9auHu3uyz0uEirylGPAJnjN_qQbvEGMUvPqUQf_g9FMNUHRxlDcUBf4vZ3Mpy4TnA9WxbmzWYK11gt2zuy_Irl4wctNFjcjLyPo0GPXV792o_J7L9guRMuDfeC1gy7USwywjYbECZgzcsHybuGRRAXAnO1eNmP8/s320/logo.png" alt="Tourmaker" class="h-8">
+                    </a>
+                    <span id="d-day-badge" class="hidden text-[10px] px-2 py-0.5 rounded-full font-bold transition-all duration-300"></span>
                 </div>
                 
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 hover:border-emerald-300 transition flex-1">
-                    <h3 class="text-lg font-bold text-slate-800 mb-2"><i class="fa-solid fa-van-shuttle text-emerald-500 mr-2"></i> 현지 이동 및 가이드</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        전 일정 <strong>17~22인승 단독 전용 차량</strong>으로 안전하게 이동하며, 경험이 풍부한 <strong>한국인 가이드</strong>가 학생들의 문화를 체험을 돕습니다.
-                    </p>
+                <div class="flex-1 overflow-x-auto no-scrollbar ml-4 md:ml-8">
+                    <div class="flex items-center space-x-1 md:space-x-6 whitespace-nowrap pr-4">
+                        <a href="#home" class="px-3 py-2 text-sm font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-lg">홈</a>
+                        <a href="#highlights" class="px-3 py-2 text-sm font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg"><i class="fa-solid fa-star mr-1"></i>포인트</a>
+                        <a href="#flight" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-lg">항공</a>
+                        <a href="#map-section" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-lg">동선</a>
+                        <a href="#schedule" class="px-3 py-2 text-sm font-bold text-indigo-600 hover:bg-slate-50 rounded-lg"><i class="fa-solid fa-calendar-check mr-1"></i>일정</a>
+                        <a href="#hotel" class="px-3 py-2 text-sm font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 rounded-lg"><i class="fa-solid fa-bed mr-1"></i>숙소</a>
+                        <a href="#smart-info" class="px-3 py-2 text-sm font-bold text-pink-600 hover:text-pink-800 hover:bg-pink-50 rounded-lg"><i class="fa-solid fa-wallet mr-1"></i>정보/물가</a>
+                        <a href="#survival" class="px-3 py-2 text-sm font-bold text-amber-600 hover:bg-amber-50 rounded-lg"><i class="fa-solid fa-language mr-1"></i>회화</a>
+                        <a href="#contact" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg">비상연락</a>
+                    </div>
+                </div>
+
+                <button onclick="shareLink()" class="shrink-0 p-2 text-slate-500 hover:text-blue-600 ml-2" title="일정표 공유하기"><i class="fa-solid fa-share-nodes text-xl"></i></button>
+            </nav>
+        </header>
+
+        <!-- Hero -->
+        <section id="home" class="hero-bg min-h-[75vh] flex items-center justify-center text-center px-4">
+            <div class="animate-fade-in-up text-white w-full max-w-4xl flex flex-col items-center">
+                <span class="bg-blue-600/90 text-white px-6 py-2 rounded-full text-lg md:text-xl font-bold mb-6 inline-block border border-white/20 shadow-lg tracking-widest">
+                    <i class="fa-solid fa-school mr-2"></i>영월신천초 해외문화탐방
+                </span>
+                
+                <!-- 동적 타이틀 영역 -->
+                <div id="hero-title-container">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4 drop-shadow-2xl font-[Nanum Myeongjo] leading-tight">
+                        아름다운 항구도시<br>
+                        <span class="text-yellow-400 font-bold text-3xl md:text-5xl mt-2 inline-block">시드니를 만나다</span>
+                    </h1>
+                </div>
+                
+                <div id="hero-info-box" class="bg-black/60 backdrop-blur-sm inline-block px-8 py-3 rounded-2xl mt-4 border border-white/20">
+                    <p class="text-lg md:text-xl text-white font-bold tracking-wide">2026.11.28(토) ~ 12.03(목) <span class="text-base font-normal">| 4박 6일</span></p>
+                    <p class="text-sm md:text-base text-blue-200 font-medium mt-1">인천국제공항 출발 (대한항공 직항)</p>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
+        </section>
 
-<section id="schedule" class="py-20 bg-slate-50 border-b border-slate-200 scroll-mt-16">
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-10">
-            <h2 class="text-3xl font-bold mt-2">시드니 4박 6일 확정 일정표</h2>
-            <p class="text-slate-500 mt-3 text-sm">전체 일정 및 방문지 상세 내용입니다. (현지 사정에 의해 변동될 수 있습니다.)</p>
-        </div>
+        <!-- Highlights Section -->
+        <section id="highlights" class="py-12 bg-white -mt-8 rounded-t-3xl relative z-10 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-10">
+                    <span class="text-blue-600 font-black tracking-widest text-xs uppercase">SPECIAL POINTS</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">신천초등학교만을 위한<br class="md:hidden"/> 3가지 핵심 기획</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4 text-3xl">🎓</div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">글로벌 마인드 함양</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                            호주 최고의 명문 시드니 대학교 탐방 및 호주 역사 문화의 중심인 시티 투어를 통해 학생들의 시야를 넓히고 글로벌 리더로서의 꿈을 키웁니다.
+                        </p>
+                        <span class="inline-block bg-indigo-600 text-white text-xs px-2 py-1 rounded font-bold">교육적 가치 중심</span>
+                    </div>
 
-        <!-- Day visual summary -->
-        <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
-            <div class="day-card bg-white border border-slate-200 rounded-xl p-3 text-center text-xs relative z-10"><span class="text-2xl block mb-1">🛫</span><p class="font-black text-slate-800">DAY 1</p><p class="text-slate-500">11/28 출국</p><div class="hidden lg:block day-connector"></div></div>
-            <div class="day-card bg-white border border-slate-200 rounded-xl p-3 text-center text-xs relative z-10"><span class="text-2xl block mb-1">🏖️</span><p class="font-black text-slate-800">DAY 2</p><p class="text-slate-500">동부/시드니대</p><div class="hidden lg:block day-connector"></div></div>
-            <div class="day-card bg-white border border-slate-200 rounded-xl p-3 text-center text-xs relative z-10"><span class="text-2xl block mb-1">🐬</span><p class="font-black text-slate-800">DAY 3</p><p class="text-slate-500">포트스테판</p><div class="hidden lg:block day-connector"></div></div>
-            <div class="day-card bg-white border border-slate-200 rounded-xl p-3 text-center text-xs relative z-10"><span class="text-2xl block mb-1">⛰️</span><p class="font-black text-slate-800">DAY 4</p><p class="text-slate-500">블루마운틴</p><div class="hidden lg:block day-connector"></div></div>
-            <div class="day-card bg-white border border-slate-200 rounded-xl p-3 text-center text-xs relative z-10"><span class="text-2xl block mb-1">🌅</span><p class="font-black text-slate-800">DAY 5</p><p class="text-slate-500">시티/크루즈</p><div class="hidden lg:block day-connector"></div></div>
-            <div class="day-card bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-xs z-10"><span class="text-2xl block mb-1">🛬</span><p class="font-black text-emerald-800">DAY 6</p><p class="text-emerald-600">12/3 귀국</p></div>
-        </div>
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mb-4 text-3xl">🐨</div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">호주 대자연 생태 체험</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                            포트스테판 야생 돌고래 탐조 및 사막 샌드보딩, 쥬라기 시대 원시림을 간직한 블루마운틴, 고유종을 만나는 동물원까지 호주 생태계를 생생하게 체험합니다.
+                        </p>
+                        <span class="inline-block bg-amber-600 text-white text-xs px-2 py-1 rounded font-bold">생태 감수성 증진</span>
+                    </div>
 
-        <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-            <div class="p-5 bg-emerald-700 text-white font-bold flex items-center gap-2 text-lg">
-                <i class="fa-solid fa-list-check"></i> 상세 일정표 (성인 2명 + 초등학생 11명)
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative">
+                        <div class="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-bounce">중점 운영</div>
+                        <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mb-4 text-3xl">🛡️</div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">안전하고 쾌적한 여정</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                            전 일정 단독 전용 차량 및 엄선된 4성급 호텔 사용, T-safe24 스마트 안전 매뉴얼 도입 등 학생들의 안전과 컨디션 유지를 최우선으로 고려했습니다.
+                        </p>
+                        <span class="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded font-bold">밀착 케어 시스템</span>
+                    </div>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full schedule-table min-w-[768px] text-sm">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-600 text-center border-b border-slate-200">
-                            <th class="p-3 w-[10%]">일자</th>
-                            <th class="p-3 w-[12%]">이동</th>
-                            <th class="p-3 w-[58%] text-left pl-6">상세 일정</th>
-                            <th class="p-3 w-[20%]">식사</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-700">
-                        <!-- DAY 1 -->
-                        <tr class="border-b border-slate-100">
-                            <td class="p-4 text-center">
-                                <span class="font-black text-base text-slate-800">제1일</span><br>
-                                <span class="text-xs text-slate-500">11/28(토)</span>
-                            </td>
-                            <td class="p-4 text-center text-xs text-slate-500">
-                                인천<br>↓<br>기내
-                            </td>
-                            <td class="p-4">
-                                <ul class="space-y-1">
-                                    <li><strong class="text-blue-700 highlight-text">18:55 인천 국제공항 출발 (KE401)</strong></li>
-                                    <li class="text-slate-500 pl-2">- 기내 이동 및 휴식</li>
-                                </ul>
-                            </td>
-                            <td class="p-4 text-xs">
-                                조: 불포함<br>중: 불포함<br>석: 기내식
-                            </td>
-                        </tr>
+        </section>
 
-                        <!-- DAY 2 -->
-                        <tr class="border-b border-slate-100 bg-emerald-50/30">
-                            <td class="p-4 text-center">
-                                <span class="font-black text-base text-slate-800">제2일</span><br>
-                                <span class="text-xs text-slate-500">11/29(일)</span>
-                            </td>
-                            <td class="p-4 text-center text-xs text-slate-500">
-                                시드니<br>(전용차량)
-                            </td>
-                            <td class="p-4">
-                                <ul class="space-y-2">
-                                    <li><strong>시드니 공항 도착 및 가이드 픽업</strong></li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 반나절 동부투어</span>
-                                        <ul class="pl-4 text-slate-600 list-disc list-inside mt-1 text-xs space-y-1">
-                                            <li><strong class="text-slate-700">갭파크:</strong> 아름다운 바다경치가 펼쳐지는 멋진 곳</li>
-                                            <li><strong class="text-slate-700">본다이 비치:</strong> 주변 경관이 아름다운 호주 대표 해변</li>
-                                            <li><strong class="text-slate-700">더들리 페이지:</strong> 본다이 비치와 시티가 한눈에 들어오는 뷰포인트</li>
-                                        </ul>
-                                    </li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 시드니 대학교 방문 및 투어</span> (약 1시간 소요)</li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 오페라하우스 내부 투어</span> (약 30분 소요)</li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 세인트 메리 대성당</span> 관람</li>
-                                    <li>석식(한식) 후 호텔 이동 및 휴식</li>
-                                </ul>
-                            </td>
-                            <td class="p-4 text-xs border-l border-slate-50">
-                                조: 기내식<br>중: 현지식<br>석: 한식
-                            </td>
-                        </tr>
+        <!-- Flight & Airport Guide -->
+        <section id="flight" class="py-12 bg-slate-50 border-t border-slate-100">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <span class="text-blue-600 font-black tracking-widest text-xs uppercase">FLIGHT INFO</span>
+                    <h2 class="text-3xl font-bold text-slate-800 mt-2">항공 스케줄 안내</h2>
+                </div>
 
-                        <!-- DAY 3 -->
-                        <tr class="border-b border-slate-100">
-                            <td class="p-4 text-center">
-                                <span class="font-black text-base text-slate-800">제3일</span><br>
-                                <span class="text-xs text-slate-500">11/30(월)</span>
-                            </td>
-                            <td class="p-4 text-center text-xs text-slate-500">
-                                포트스테판<br>(전용차량)
-                            </td>
-                            <td class="p-4">
-                                <ul class="space-y-2">
-                                    <li><strong>07:00 호텔 픽업 후 포트스테판 이동</strong></li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 10:30 돌고래 크루즈 (Dolphin Cruise)</span>
-                                        <ul class="pl-4 text-slate-600 list-disc list-inside mt-1 text-xs">
-                                            <li>남태평양 바다를 가로지르는 크루즈 탑승 및 야생 돌고래 감상</li>
-                                        </ul>
-                                    </li>
-                                    <li>현지식 중식</li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 13:00 샌드보딩 (Sand Boarding)</span>
-                                        <ul class="pl-4 text-slate-600 list-disc list-inside mt-1 text-xs">
-                                            <li>Birubi Beach 옆 위치한 신비한 모래언덕(Sand Dune)</li>
-                                            <li>사륜구동 차량으로 이동 및 모래썰매 체험</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong class="highlight-text">18:00 석식(한식) 후 호텔 이동 및 휴식</strong></li>
-                                </ul>
-                            </td>
-                            <td class="p-4 text-xs border-l border-slate-50">
-                                조: 호텔식<br>중: 현지식<br>석: 한식
-                            </td>
-                        </tr>
+                <div class="max-w-4xl mx-auto mb-10">
+                    <div class="bg-white rounded-2xl border border-blue-100 shadow-md p-6">
+                        <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                            <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 w-full md:w-1/2 text-center">
+                                <span class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-bold mb-3 inline-block">출국 11.28(토)</span>
+                                <p class="font-black text-xl text-slate-800 mb-1">대한항공 KE401</p>
+                                <p class="text-slate-600 font-medium text-lg">인천 18:55 <i class="fa-solid fa-plane text-blue-400 mx-2"></i> 시드니</p>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 w-full md:w-1/2 text-center">
+                                <span class="text-xs bg-slate-600 text-white px-3 py-1 rounded-full font-bold mb-3 inline-block">귀국 12.03(목)</span>
+                                <p class="font-black text-xl text-slate-800 mb-1">대한항공 KE402</p>
+                                <p class="text-slate-600 font-medium text-lg">시드니 09:10 <i class="fa-solid fa-plane text-slate-400 mx-2"></i> 인천</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                        <!-- DAY 4 -->
-                        <tr class="border-b border-slate-100 bg-emerald-50/30">
-                            <td class="p-4 text-center">
-                                <span class="font-black text-base text-slate-800">제4일</span><br>
-                                <span class="text-xs text-slate-500">12/01(화)</span>
-                            </td>
-                            <td class="p-4 text-center text-xs text-slate-500">
-                                블루마운틴<br>(전용차량)
-                            </td>
-                            <td class="p-4">
-                                <ul class="space-y-2">
-                                    <li><strong>08:00 호텔 픽업 후 블루마운틴 이동</strong></li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 시닉월드 (Scenic World)</span>
-                                        <ul class="pl-4 text-slate-600 list-disc list-inside mt-1 text-xs space-y-1">
-                                            <li>쥬라기 시대의 고대 수풀림 산림욕</li>
-                                            <li>가파른 절벽을 따라 이어진 52도 경사의 궤도열차 등 탑승</li>
-                                        </ul>
-                                    </li>
-                                    <li>현지식 중식</li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 에코포인트 전망대 (Echo Point)</span>
-                                        <p class="pl-4 text-slate-600 text-xs mt-1">- 세자매봉과 자미슨 밸리 절경 감상</p>
-                                    </li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 시드니 주 (Sydney Zoo)</span>
-                                        <p class="pl-4 text-slate-600 text-xs mt-1">- 에뮤, 타즈매니안 데블, 딩고 등 호주 대표 동물 관람</p>
-                                    </li>
-                                    <li><strong class="highlight-text">석식(인터내셔널 뷔페) 후 18:00 호텔 이동</strong></li>
-                                </ul>
-                            </td>
-                            <td class="p-4 text-xs border-l border-slate-50">
-                                조: 호텔식<br>중: 현지식<br>석: 뷔페
-                            </td>
-                        </tr>
+        <!-- Map Section (독립된 지도 섹션) -->
+        <section id="map-section" class="py-12 bg-white border-t border-slate-200">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <span class="text-indigo-600 font-black tracking-widest text-xs uppercase">ANIMATED ROUTING MAP</span>
+                    <h2 class="text-3xl font-bold text-slate-800 mt-2">한눈에 보는 탐방 동선</h2>
+                    <p class="text-slate-500 mt-2 text-sm">일자별 버튼을 클릭하시면 세부 이동 경로가 표시됩니다.</p>
+                </div>
 
-                        <!-- DAY 5 -->
-                        <tr class="border-b border-slate-100">
-                            <td class="p-4 text-center">
-                                <span class="font-black text-base text-slate-800">제5일</span><br>
-                                <span class="text-xs text-slate-500">12/02(수)</span>
-                            </td>
-                            <td class="p-4 text-center text-xs text-slate-500">
-                                시드니<br>(전용차량)
-                            </td>
-                            <td class="p-4">
-                                <ul class="space-y-2">
-                                    <li><strong>09:00 호텔 픽업 및 시티 투어 시작</strong></li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 시드니 핵심 명소</span>
-                                        <ul class="pl-4 text-slate-600 list-disc list-inside mt-1 text-xs space-y-1">
-                                            <li><strong>오페라하우스:</strong> 호주를 대표하는 아름다운 건축물 (외관)</li>
-                                            <li><strong>하버 브릿지:</strong> 세계에서 두 번째로 긴 아치형 다리</li>
-                                            <li><strong>미시즈 매쿼리스 포인트:</strong> 최고의 뷰포인트</li>
-                                        </ul>
-                                    </li>
-                                    <li>현지식 중식</li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 바랑가루 또는 피쉬마켓</span> (시드니 핫플레이스 여유 시간)</li>
-                                    <li><span class="text-emerald-700 font-bold">▶ 시드니 천문대</span> (항구를 한눈에 보는 뷰포인트)</li>
-                                    <li><strong class="highlight-text text-orange-700">▶ 18:00 선셋 디너 크루즈</strong>
-                                        <p class="pl-4 text-slate-600 text-xs mt-1">- 아름다운 시드니 항을 유람하며 잊지 못할 선상 디너</p>
-                                    </li>
-                                    <li>호텔 이동 및 휴식</li>
-                                </ul>
-                            </td>
-                            <td class="p-4 text-xs border-l border-slate-50">
-                                조: 호텔식<br>중: 현지식<br>석: 선상식
-                            </td>
-                        </tr>
+                <div class="flex flex-wrap justify-center gap-2 mb-6 px-2" id="map-controls">
+                    <button onclick="changeMapRoute('all')" class="map-btn active px-5 py-2 rounded-full border border-slate-300 bg-slate-800 text-white text-sm font-bold transition shadow-md">전체 여정</button>
+                    <button onclick="changeMapRoute('day2')" class="map-btn px-5 py-2 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 text-sm font-bold transition">2일차</button>
+                    <button onclick="changeMapRoute('day3')" class="map-btn px-5 py-2 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 text-sm font-bold transition">3일차</button>
+                    <button onclick="changeMapRoute('day4')" class="map-btn px-5 py-2 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 text-sm font-bold transition">4일차</button>
+                    <button onclick="changeMapRoute('day5')" class="map-btn px-5 py-2 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 text-sm font-bold transition">5일차</button>
+                </div>
+
+                <div class="max-w-5xl mx-auto border border-slate-200 rounded-2xl p-1 shadow-lg bg-white relative z-10">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Section (독립된 탭 일정 섹션) -->
+        <section id="schedule" class="py-16 bg-slate-50 border-t border-slate-200">
+            <div class="container mx-auto px-4">
+                <div class="max-w-5xl mx-auto">
+                    <div class="text-center mb-10 relative">
+                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-bold shadow-sm mb-3">OFFICIAL ITINERARY</span>
+                        <h2 class="text-3xl font-bold text-slate-800">일자별 상세 일정표</h2>
                         
-                        <!-- DAY 6 -->
-                        <tr class="bg-emerald-50/30">
-                            <td class="p-4 text-center">
-                                <span class="font-black text-base text-slate-800">제6일</span><br>
-                                <span class="text-xs text-slate-500">12/03(목)</span>
-                            </td>
-                            <td class="p-4 text-center text-xs text-slate-500">
-                                공항<br>↓<br>인천
-                            </td>
-                            <td class="p-4">
-                                <ul class="space-y-2">
-                                    <li>호텔 앞 가이드 미팅 후 공항 이동</li>
-                                    <li>국제선 터미널로 이동 후 수속</li>
-                                    <li><strong class="text-blue-700 highlight-text">09:10 시드니 출발 (KE402)</strong></li>
-                                    <li>17:50 인천 국제공항 도착 및 해산</li>
-                                </ul>
-                            </td>
-                            <td class="p-4 text-xs border-l border-slate-50">
-                                조: 호텔식(도시락)<br>중: 기내식<br>석: 불포함
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="p-4 bg-slate-100 text-xs text-slate-500 text-right">
-                ※ 현지 기상 및 도로 사정에 의해 일정이 유동적으로 변경될 수 있습니다.
-            </div>
-        </div>
-    </div>
-</section>
+                        <!-- 🖨️ 공무원/학교 결재 서류용 인쇄 버튼 -->
+                        <button onclick="window.print()" class="mt-6 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold py-2.5 px-5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mx-auto md:mx-0 active:scale-95 animate-pulse">
+                            <i class="fa-solid fa-print"></i> 일정표 인쇄하기
+                        </button>
+                    </div>
 
-<section id="map-section" class="py-20 bg-white border-b border-slate-200">
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-10">
-            <h2 class="text-3xl font-bold">방문지 동선 지도</h2>
-            <p class="text-slate-500 mt-2">일자별 시드니 이동 동선을 확인하세요.</p>
-        </div>
-        
-        <div class="flex flex-wrap justify-center gap-2 mb-6" id="map-controls">
-            <!-- Buttons dynamically generated by JS -->
-        </div>
-        
-        <div class="max-w-5xl mx-auto bg-slate-50 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-slate-200">
-            <div id="routeMap" class="w-full h-[400px] md:h-[550px] rounded-xl z-0"></div>
-        </div>
-    </div>
-</section>
+                    <!-- Tabs -->
+                    <div class="flex overflow-x-auto no-scrollbar gap-2 mb-8 justify-start md:justify-center px-2 pb-2">
+                        <button class="tab-btn shrink-0 px-6 py-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-bold text-sm transition hover:bg-slate-50" onclick="openTab(event, 'day1'); changeMapRoute('all')">1일차 (11.28)</button>
+                        <button class="tab-btn active shrink-0 px-6 py-3 rounded-2xl border-2 border-blue-600 bg-blue-600 text-white font-bold text-sm transition shadow-md" onclick="openTab(event, 'day2'); changeMapRoute('day2')">2일차 (11.29)</button>
+                        <button class="tab-btn shrink-0 px-6 py-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-bold text-sm transition hover:bg-slate-50" onclick="openTab(event, 'day3'); changeMapRoute('day3')">3일차 (11.30)</button>
+                        <button class="tab-btn shrink-0 px-6 py-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-bold text-sm transition hover:bg-slate-50" onclick="openTab(event, 'day4'); changeMapRoute('day4')">4일차 (12.01)</button>
+                        <button class="tab-btn shrink-0 px-6 py-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-bold text-sm transition hover:bg-slate-50" onclick="openTab(event, 'day5'); changeMapRoute('day5')">5일차 (12.02)</button>
+                        <button class="tab-btn shrink-0 px-6 py-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-bold text-sm transition hover:bg-slate-50" onclick="openTab(event, 'day6'); changeMapRoute('all')">6일차 (12.03)</button>
+                    </div>
 
-<section id="mynote" class="py-20 bg-slate-50 border-b">
-    <div class="container mx-auto px-4 max-w-5xl">
-        <div class="text-center mb-10">
-            <h2 class="text-2xl font-bold"><i class="fa-solid fa-clipboard-check text-emerald-600"></i> 진행 현황 체크리스트</h2>
-            <p class="text-slate-500 mt-2 text-sm">진행 상황을 브라우저에 자동 저장합니다.</p>
-        </div>
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 class="font-bold mb-4 text-slate-800">출발 전 필수 확인</h3>
-                <div id="checklist-container" class="space-y-2"></div>
-                <button type="button" onclick="resetChecklist()" class="mt-4 text-xs text-slate-400 hover:text-red-500 underline transition">체크 초기화</button>
-            </div>
-            <div>
-                <h3 class="font-bold mb-4 text-slate-800"><i class="fa-solid fa-pen text-yellow-600"></i> 메모장 (자동 저장)</h3>
-                <textarea id="travel-memo" class="notepad w-full h-[280px] p-5 text-base resize-none rounded-xl" placeholder="학생별 주의사항(알러지), 학부모 연락처, 학교 행정 사항 등을 메모해 두세요."></textarea>
-                <p id="save-status" class="text-xs text-emerald-600 mt-2 font-medium">자동 저장 대기중...</p>
-            </div>
-        </div>
-    </div>
-</section>
+                    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                        
+                        <!-- Day 1 -->
+                        <div id="day1" class="tab-content hidden animate-fade-in-up p-6 md:p-10 text-center">
+                            <div class="flex items-center gap-4 mb-8 border-b pb-6 justify-center">
+                                <span class="text-4xl bg-blue-100 p-4 rounded-2xl text-blue-700"><i class="fa-solid fa-plane-departure"></i></span>
+                                <div class="text-left">
+                                    <h3 class="font-bold text-2xl text-slate-800">호주로 출발</h3>
+                                    <p class="text-blue-600 font-medium text-sm mt-1"><i class="fa-solid fa-map-location-dot"></i> 인천 → 시드니행 기내</p>
+                                    <p class="text-xs text-slate-500 mt-1">조: 불포함 / 중: 불포함 / 석: 기내식</p>
+                                </div>
+                            </div>
+                            <div class="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8 text-left max-w-3xl mx-auto">
+                                <div class="relative">
+                                    <div class="timeline-dot bg-blue-600 ring-blue-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🛫 18:55 인천 국제공항 출발 (KE401)</h4>
+                                    <p class="text-slate-600 text-sm mt-2">안전하게 기내에 탑승하여 호주 시드니로 향합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🌙 기내 숙박 및 휴식</h4>
+                                </div>
+                            </div>
+                        </div>
 
-<section id="contact" class="py-20 bg-white">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-2xl font-bold mb-8">영월신천초 전담 창구 · TOURMAKER</h2>
-        <div class="max-w-md mx-auto bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-[0_10px_40px_rgba(0,0,0,0.05)]">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHfgIX70O5k6Anuo0UgALIdaG9jSga9auHu3uyz0uEirylGPAJnjN_qQbvEGMUvPqUQf_g9FMNUHRxlDcUBf4vZ3Mpy4TnA9WxbmzWYK11gt2zuy_Irl4wctNFjcjLyPo0GPXV792o_J7L9guRMuDfeC1gy7USwywjYbECZgzcsHybuGRRAXAnO1eNmP8/s320/logo.png" alt="Tourmaker" class="h-8 mx-auto mb-4">
-            <p class="text-sm text-slate-600 mb-6">시드니 프로그램 완벽 행사를 위해 최선을 다하겠습니다.</p>
-            <div class="space-y-3 text-sm bg-white p-5 rounded-xl border border-slate-100 text-left">
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded text-xs">총괄 책임</span>
-                    <a href="tel:01094437881" class="text-emerald-700 font-black hover:underline">이재명 대표 010-9443-7881</a>
+                        <!-- Day 2 -->
+                        <div id="day2" class="tab-content animate-fade-in-up p-6 md:p-10">
+                            <div class="flex items-center gap-4 mb-8 border-b pb-6">
+                                <span class="text-4xl bg-emerald-100 p-4 rounded-2xl text-emerald-700"><i class="fa-solid fa-water"></i></span>
+                                <div>
+                                    <h3 class="font-bold text-2xl text-slate-800">시드니 입성 & 동부 해안</h3>
+                                    <p class="text-emerald-600 font-medium text-sm mt-1"><i class="fa-solid fa-map-location-dot"></i> 시드니 시티 & 동부 해변</p>
+                                    <p class="text-xs text-slate-500 mt-1">조: 기내식 / 중: 현지식 / 석: 한식</p>
+                                </div>
+                            </div>
+                            <div class="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8">
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🛬 오전 시드니 도착 및 가이드 미팅</h4>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-emerald-600 ring-emerald-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🌊 시드니 반나절 동부 해안 투어</h4>
+                                    <p class="text-slate-600 text-sm mt-2">바다 경치가 멋진 갭파크, 서퍼들의 천국 본다이 비치, 시드니 전경이 보이는 더들리 페이지를 방문합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-blue-500 ring-blue-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🎓 명문 시드니 대학교 탐방</h4>
+                                    <p class="text-slate-600 text-sm mt-2">호주 최고의 명문 대학교 캠퍼스를 거닐며 학구열을 느낍니다. (약 1시간)</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-amber-500 ring-amber-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏛️ 오페라하우스 내부투어 & 성당 관람</h4>
+                                    <p class="text-slate-600 text-sm mt-2">오페라하우스 내부를 둘러보고, 장엄한 세인트 메리 대성당을 관람합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏨 한식 석식 후 호텔 이동 및 휴식</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 3 -->
+                        <div id="day3" class="tab-content hidden animate-fade-in-up p-6 md:p-10">
+                            <div class="flex items-center gap-4 mb-8 border-b pb-6">
+                                <span class="text-4xl bg-cyan-100 p-4 rounded-2xl text-cyan-700"><i class="fa-solid fa-dolphin"></i></span>
+                                <div>
+                                    <h3 class="font-bold text-2xl text-slate-800">대자연 탐험: 포트스테판</h3>
+                                    <p class="text-cyan-600 font-medium text-sm mt-1"><i class="fa-solid fa-map-location-dot"></i> 시드니 → 포트스테판 → 시드니</p>
+                                    <p class="text-xs text-slate-500 mt-1">조: 호텔식 / 중: 현지식 / 석: 한식</p>
+                                </div>
+                            </div>
+                            <div class="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8">
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🚌 07:00 기상 및 포트스테판으로 이동</h4>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-cyan-600 ring-cyan-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🛳️ 야생 돌고래 크루즈 (Dolphin Cruise)</h4>
+                                    <p class="text-slate-600 text-sm mt-2">남태평양 바다를 가로지르는 크루즈에 탑승하여 야생 돌고래 무리를 탐조합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-orange-500 ring-orange-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏜️ 사막 샌드보딩 (Sand Boarding)</h4>
+                                    <p class="text-slate-600 text-sm mt-2">해안 모래언덕(Birubi Beach Sand Dune)에서 사륜구동 차량을 타고 모래썰매를 체험합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏨 시티 귀환 및 한식 석식 후 휴식</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 4 -->
+                        <div id="day4" class="tab-content hidden animate-fade-in-up p-6 md:p-10">
+                            <div class="flex items-center gap-4 mb-8 border-b pb-6">
+                                <span class="text-4xl bg-indigo-100 p-4 rounded-2xl text-indigo-700"><i class="fa-solid fa-mountain"></i></span>
+                                <div>
+                                    <h3 class="font-bold text-2xl text-slate-800">세계유산 블루마운틴 & 동물원</h3>
+                                    <p class="text-indigo-600 font-medium text-sm mt-1"><i class="fa-solid fa-map-location-dot"></i> 시드니 → 블루마운틴 → 시드니</p>
+                                    <p class="text-xs text-slate-500 mt-1">조: 호텔식 / 중: 현지식 / 석: 뷔페식</p>
+                                </div>
+                            </div>
+                            <div class="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8">
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🚌 08:00 블루마운틴 국립공원으로 이동</h4>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-indigo-600 ring-indigo-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🛤️ 시닉월드 & 고대 원시림 산림욕</h4>
+                                    <p class="text-slate-600 text-sm mt-2">가파른 절벽을 따라 이어진 52도 경사의 궤도열차 등을 탑승하고 쥬라기 시대 원시림을 걷습니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-green-600 ring-green-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">📸 에코포인트 전망대</h4>
+                                    <p class="text-slate-600 text-sm mt-2">원주민의 전설이 숨어있는 세자매봉과 광활한 자미슨 밸리의 장관을 감상합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-amber-600 ring-amber-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🐨 시드니 주 (Sydney Zoo) 관람</h4>
+                                    <p class="text-slate-600 text-sm mt-2">코알라, 캥거루, 딩고 등 호주의 고유 생태계를 관찰합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏨 인터내셔널 뷔페 석식 후 휴식</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 5 -->
+                        <div id="day5" class="tab-content hidden animate-fade-in-up p-6 md:p-10">
+                            <div class="flex items-center gap-4 mb-8 border-b pb-6">
+                                <span class="text-4xl bg-pink-100 p-4 rounded-2xl text-pink-700"><i class="fa-solid fa-city"></i></span>
+                                <div>
+                                    <h3 class="font-bold text-2xl text-slate-800">항구도시의 낭만, 시티투어 & 크루즈</h3>
+                                    <p class="text-pink-600 font-medium text-sm mt-1"><i class="fa-solid fa-map-location-dot"></i> 시드니 시티</p>
+                                    <p class="text-xs text-slate-500 mt-1">조: 호텔식 / 중: 현지식 / 석: 선상식</p>
+                                </div>
+                            </div>
+                            <div class="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8">
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">📍 09:00 시드니 시내 랜드마크 투어</h4>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-pink-600 ring-pink-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🌉 랜드마크 & 뷰포인트 조망</h4>
+                                    <p class="text-slate-600 text-sm mt-2">오페라하우스 외관, 하버 브릿지, 그리고 두 가지가 겹쳐 보이는 미시즈 매쿼리스 포인트를 방문합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-purple-500 ring-purple-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏙️ 핫 플레이스 & 천문대 탐방</h4>
+                                    <p class="text-slate-600 text-sm mt-2">바랑가루 또는 피쉬마켓 자유시간을 갖고, 항구가 내려다보이는 시드니 천문대 언덕을 산책합니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-rose-600 ring-rose-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🚢 선셋 디너 크루즈 탑승</h4>
+                                    <p class="text-slate-600 text-sm mt-2">저녁 6시경, 석양빛으로 물드는 하버를 유람하며 잊지 못할 선상 만찬을 즐깁니다.</p>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏨 호텔 이동 및 마지막 밤 휴식</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Day 6 -->
+                        <div id="day6" class="tab-content hidden animate-fade-in-up p-6 md:p-10 text-center">
+                            <div class="flex items-center gap-4 mb-8 border-b pb-6 justify-center">
+                                <span class="text-4xl bg-slate-100 p-4 rounded-2xl text-slate-700"><i class="fa-solid fa-plane-arrival"></i></span>
+                                <div class="text-left">
+                                    <h3 class="font-bold text-2xl text-slate-800">귀국 및 해산</h3>
+                                    <p class="text-slate-600 font-medium text-sm mt-1"><i class="fa-solid fa-map-location-dot"></i> 시드니 → 인천</p>
+                                    <p class="text-xs text-slate-500 mt-1">조: 호텔식 / 중: 기내식 / 석: 불포함</p>
+                                </div>
+                            </div>
+                            <div class="relative border-l-2 border-slate-200 ml-4 pl-8 space-y-8 text-left max-w-3xl mx-auto">
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-500 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🏨 오전: 조식 후 체크아웃 및 공항 이동</h4>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-blue-600 ring-blue-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🛫 09:10 시드니 국제공항 출발 (KE402)</h4>
+                                </div>
+                                <div class="relative">
+                                    <div class="timeline-dot bg-slate-400 ring-slate-100"></div>
+                                    <h4 class="font-bold text-lg text-slate-800">🛬 오후: 인천 국제공항 도착 및 행사 종료</h4>
+                                    <p class="text-slate-500 text-sm mt-2">안전하게 귀국하여 해산합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <hr class="border-slate-100">
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded text-xs">실무 담당</span>
-                    <a href="tel:01042494026" class="text-emerald-700 font-black hover:underline">조혁 이사 010-4249-4026</a>
+            </div>
+        </section>
+
+        <!-- Accommodations -->
+        <section id="hotel" class="py-16 bg-white border-t border-slate-200">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-10">
+                    <span class="text-slate-600 font-black tracking-widest text-xs uppercase">ACCOMMODATION</span>
+                    <h2 class="text-3xl font-bold text-slate-800 mt-2">Crowne Plaza Sydney Macquarie Park</h2>
+                    <p class="text-sm text-slate-500 mt-2">안전하고 쾌적하게 머물 시드니의 베이스캠프 (4성급) 입니다.</p>
+                </div>
+
+                <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-100 relative group">
+                            <img src="https://ik.imgkit.net/3vlqs5axxjf/external/ik-seo/https://www.cfmedia.vfmleonardo.com/imageRepo/2/0/186/747/393/SYDMQ_10117361038_O/Crowne-Plaza-Sydney-Macquarie-Park-Exterior.jpg?tr=w-2000,fo-auto" alt="호텔 외관" class="w-full h-64 object-cover transform transition duration-500 group-hover:scale-105">
+                            <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">호텔 전경</div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-7 flex flex-col h-full justify-center">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1"><i class="fa-solid fa-location-dot text-blue-500"></i> 위치 특징</p>
+                                <p class="text-sm text-slate-700 font-medium">맥쿼리 파크 메트로역 도보 2분<br>시드니 CBD/노스시드니 전철 직결</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <p class="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1"><i class="fa-solid fa-bell-concierge text-blue-500"></i> 편의 시설</p>
+                                <p class="text-sm text-slate-700 font-medium">비스트로 레스토랑, 24시간 피트니스, 무료 Wi-Fi 등</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 md:col-span-2 flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1"><i class="fa-solid fa-clock text-blue-500"></i> 체크인 / 아웃</p>
+                                    <p class="text-sm text-slate-700 font-medium">15:00 / 11:00</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs font-bold text-slate-400 mb-1">연락처 및 주소</p>
+                                    <p class="text-xs text-slate-600">+61 (02) 9491 9500<br>7-11 Talavera Rd, North Ryde</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </section>
+
+        <!-- 스마트 현지 정보 (5종 물가, 환율, 날씨) -->
+        <section id="smart-info" class="py-16 bg-slate-100 border-t border-slate-200">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-10">
+                    <span class="inline-block bg-pink-100 text-pink-700 text-xs px-3 py-1 rounded-full font-bold shadow-sm mb-3">SMART INFO</span>
+                    <h2 class="text-3xl font-bold text-slate-800">현지 체감 물가 및 날씨 가이드</h2>
+                    <p class="text-sm text-slate-500 mt-2">여행 전 미리 알아보는 꿀팁! 용돈 계획과 옷차림을 준비해 보세요.</p>
+                </div>
+
+                <div class="max-w-5xl mx-auto space-y-8">
+                    <!-- 1. 여행 경비 & 환율 (5종 물가 비교 - 호주) -->
+                    <div class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden">
+                        <div class="bg-blue-600 p-4 text-center">
+                            <h3 class="text-white font-bold text-lg"><i class="fa-solid fa-dollar-sign mr-2"></i>호주 5대 품목 체감 물가 & 환율 계산기</h3>
+                        </div>
+                        <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                            
+                            <!-- 5종 물가 리스트 (AUD) -->
+                            <div class="space-y-4">
+                                <h4 class="font-bold text-slate-800 text-lg border-b pb-2">📊 시드니 체감 물가 (현지 vs 원화)</h4>
+                                <div class="space-y-3 mt-4" id="price-list">
+                                    <!-- JS Populated based on exchange rate -->
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-2 text-right">※ 원화는 실시간 환율 및 <b>해외 송금 수수료(1.5%)</b>를 반영한 대략적 체감 금액입니다.</p>
+                            </div>
+
+                            <!-- 실시간 환율 계산기 -->
+                            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 shadow-inner">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="font-bold text-blue-900 text-lg">호주 달러($) 간편 계산기</h4>
+                                    <span class="text-[10px] bg-blue-200 text-blue-800 px-2 py-1 rounded font-bold">수수료 1.5% 포함</span>
+                                </div>
+                                <p class="text-xs text-blue-600 mb-4">물건의 가격표(호주 달러)를 입력하면 수수료가 반영된 한국 돈으로 변환해 줍니다.</p>
+                                
+                                <div class="relative mb-4">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                                    <input type="number" id="aud-input" oninput="calcKRW()" placeholder="예: 10" class="w-full pl-10 pr-4 py-4 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none text-lg font-bold text-slate-800 shadow-sm transition-all" inputmode="numeric">
+                                </div>
+                                <div class="text-center text-blue-300 my-2"><i class="fa-solid fa-arrow-down"></i></div>
+                                <div class="bg-slate-800 rounded-xl p-5 text-center shadow-md">
+                                    <p class="text-xs text-slate-300 mb-1">대략 한국 돈으로</p>
+                                    <p class="text-3xl font-black text-yellow-400" id="krw-output">0 <span class="text-lg font-bold text-white">원</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. 날씨 & 옷차림 (시드니) -->
+                    <div class="bg-white rounded-3xl shadow-md border border-slate-200 overflow-hidden">
+                        <div class="bg-amber-500 p-4 text-center">
+                            <h3 class="text-white font-bold text-lg"><i class="fa-solid fa-cloud-sun mr-2"></i>시드니 날씨 및 옷차림 가이드</h3>
+                        </div>
+                        <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            
+                            <!-- 실시간 날씨 위젯 (Open-Meteo API) -->
+                            <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                                <div class="absolute -right-4 -top-4 text-slate-700 opacity-30 text-8xl"><i class="fa-solid fa-cloud"></i></div>
+                                <div class="relative z-10">
+                                    <p class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
+                                        <span>LIVE 실시간 시드니 날씨</span>
+                                        <span id="weather-time">업데이트 중...</span>
+                                    </p>
+                                    <div class="flex items-end gap-3 mt-4 mb-6">
+                                        <span id="current-temp" class="text-5xl font-black tracking-tighter">--°C</span>
+                                        <span id="current-desc" class="text-lg font-medium text-slate-300 pb-1">--</span>
+                                        <span id="current-icon" class="text-4xl text-amber-400 ml-auto"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                                    </div>
+                                    <!-- 주간 날씨 예보 영역 (가로스크롤) -->
+                                    <div id="weekly-forecast" class="flex gap-2 overflow-x-auto no-scrollbar py-3 border-t border-slate-700/50 mt-2 mb-4">
+                                        <div class="text-center text-xs text-slate-400 w-full py-2">일주일 날씨를 불러오는 중...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 옷차림 조언 -->
+                            <div class="space-y-4 flex flex-col justify-center">
+                                <div class="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                    <div class="text-amber-500 text-2xl mt-1"><i class="fa-solid fa-layer-group"></i></div>
+                                    <div>
+                                        <p class="font-bold text-slate-800">자외선 차단 및 초여름 대비</p>
+                                        <p class="text-sm text-slate-600 mt-1">11~12월의 호주는 계절이 한국과 반대인 초여름입니다. 자외선이 강하므로 선크림, 모자, 선글라스가 필수입니다.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                    <div class="text-amber-500 text-2xl mt-1"><i class="fa-solid fa-shoe-prints"></i></div>
+                                    <div>
+                                        <p class="font-bold text-slate-800">바람막이와 편안한 신발</p>
+                                        <p class="text-sm text-slate-600 mt-1">블루마운틴 등 산악 지역 투어 시엔 기온이 떨어질 수 있으니 얇은 겉옷과 걷기 편한 신발을 준비해 주세요.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 원클릭 서바이벌 회화 (영어) -->
+        <section id="survival" class="py-16 bg-white border-t border-slate-200">
+            <div class="container mx-auto px-4 text-center">
+                <span class="inline-block bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full font-bold shadow-sm mb-3">SURVIVAL ENGLISH</span>
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">원클릭 서바이벌 회화</h2>
+                <p class="text-sm text-slate-500 mb-8">당황하지 마세요! 버튼을 눌러 현지인에게 화면을 보여주면 해결됩니다.</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-4xl mx-auto">
+                    <!-- 10개 필수 문장 (영어) -->
+                    <button onclick="showPhrase('화장실이 어디인가요?', 'Where is the restroom?', '웨어 이즈 더 레스트룸?', '🚽')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">🚽</div><div class="text-sm font-bold text-slate-700">화장실 위치</div>
+                    </button>
+                    <button onclick="showPhrase('이거 얼마인가요?', 'How much is this?', '하우 머치 이즈 디스?', '💰')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">💰</div><div class="text-sm font-bold text-slate-700">가격 문의</div>
+                    </button>
+                    <button onclick="showPhrase('계산서 주세요.', 'Bill, please.', '빌 플리즈', '🧾')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">🧾</div><div class="text-sm font-bold text-slate-700">식당 결제</div>
+                    </button>
+                    <button onclick="showPhrase('길을 잃었어요. 도와주세요.', 'I am lost. Help me, please.', '아이 앰 로스트. 헬프 미 플리즈.', '🗺️')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">🗺️</div><div class="text-sm font-bold text-slate-700">길 잃음/도움</div>
+                    </button>
+                    <button onclick="showPhrase('메뉴판 주세요.', 'Menu, please.', '메뉴 플리즈', '📖')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">📖</div><div class="text-sm font-bold text-slate-700">메뉴판 요청</div>
+                    </button>
+                    <button onclick="showPhrase('물 한 잔 주시겠어요?', 'A glass of water, please.', '어 글래스 오브 워터 플리즈', '💧')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">💧</div><div class="text-sm font-bold text-slate-700">물 요청</div>
+                    </button>
+                    <button onclick="showPhrase('사진 좀 찍어주시겠어요?', 'Would you take a picture, please?', '우쥬 테이크 어 픽처 플리즈?', '📸')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">📸</div><div class="text-sm font-bold text-slate-700">사진 요청</div>
+                    </button>
+                    <button onclick="showPhrase('병원/약국 어디에요?', 'Where is the hospital/pharmacy?', '웨어 이즈 더 하스피털/파머시?', '🏥')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">🏥</div><div class="text-sm font-bold text-red-600">병원/약국</div>
+                    </button>
+                    <button onclick="showPhrase('카드 결제 되나요?', 'Do you accept credit cards?', '두 유 억셉트 크레딧 카드?', '💳')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">💳</div><div class="text-sm font-bold text-slate-700">카드 결제</div>
+                    </button>
+                    <button onclick="showPhrase('괜찮습니다. (아니요 고맙습니다)', 'No, thank you.', '노 땡큐', '✋')" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-center transition-colors shadow-sm">
+                        <div class="text-2xl mb-1">✋</div><div class="text-sm font-bold text-slate-700">거절/사양</div>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 회화 모달 (인쇄 숨김) -->
+        <div id="phrase-modal" class="hidden fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-6 print-hidden">
+            <div class="text-white text-center w-full max-w-2xl">
+                <div id="phrase-emoji" class="text-7xl mb-6 drop-shadow-lg"></div>
+                <div id="phrase-kr" class="text-2xl mb-2 text-slate-300 font-bold"></div>
+                <div id="phrase-pron" class="text-lg mb-8 text-amber-300 font-medium tracking-wide"></div>
+                <div id="phrase-local" class="text-4xl md:text-5xl font-black text-white mb-10 break-keep leading-tight"></div>
+                <p class="text-sm inline-block bg-red-600/20 text-red-400 px-5 py-3 rounded-full border border-red-500/50 font-bold animate-pulse">
+                    <i class="fa-solid fa-mobile-screen mr-2"></i>이 화면을 현지인에게 보여주세요
+                </p>
+            </div>
+            <button onclick="closePhrase()" class="absolute top-6 right-6 md:top-10 md:right-10 text-white text-4xl hover:text-red-400 transition-colors">&times;</button>
+        </div>
+
+        <!-- Video Curation -->
+        <section id="video" class="py-16 bg-slate-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-10 text-white">
+                    <span class="inline-block bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold mb-3 border border-white/30">PREVIEW 영상</span>
+                    <h2 class="text-3xl font-bold">🎬 영상으로 미리 만나는 시드니</h2>
+                    <p class="text-slate-400 text-sm mt-3">우리가 방문할 호주 항구도시의 매력을 조명합니다.</p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-slate-700 bg-black relative">
+                        <iframe class="w-full h-full absolute top-0 left-0" src="https://www.youtube.com/embed/1324qyKUIdA?controls=1" title="Sydney Travel Guide" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <p class="text-center text-slate-300 font-bold text-base md:text-lg tracking-wide mt-5">🇦🇺 시드니 핵심 요약 가이드</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checklist & Memo -->
+        <section id="check" class="py-16 bg-white border-t border-slate-100">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-10">
+                    <span class="text-blue-600 font-black tracking-widest text-xs uppercase">PREPARATION</span>
+                    <h2 class="text-3xl font-bold text-slate-800 mt-2">준비물 체크리스트 & 메모</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-blue-900"><i class="fa-solid fa-check-double mr-2"></i>필수 확인 사항</h3>
+                            <button onclick="resetChecklist()" class="text-xs text-slate-500 underline bg-white px-2 py-1 rounded border border-slate-200">[초기화]</button>
+                        </div>
+                        <div id="checklist-container" class="space-y-2"></div>
+                    </div>
+                    <div class="bg-yellow-50 p-6 rounded-2xl border border-yellow-100 shadow-sm flex flex-col">
+                        <h3 class="font-bold text-lg mb-4 text-yellow-800"><i class="fa-solid fa-pen-clip mr-2"></i>진행 메모장</h3>
+                        <textarea id="travel-memo" class="flex-1 w-full min-h-[200px] bg-white p-4 rounded-xl border border-yellow-200 text-slate-700 resize-none overflow-hidden focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="학생 특이사항, 용돈 계획 등 자유롭게 적어두세요."></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Contact & Safety Protocol -->
+        <section id="contact" class="py-16 bg-white border-t border-slate-200">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-10">
+                    <span class="text-red-600 font-black tracking-widest text-xs uppercase">EMERGENCY</span>
+                    <h2 class="text-3xl font-bold text-slate-800 mt-2">비상 연락망</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                        <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-headset text-blue-600 text-2xl"></i></div>
+                        <span class="text-xs text-slate-400 font-bold mb-1">여행 진행 및 안전 관리</span>
+                        <h4 class="font-bold text-slate-800 text-xl mb-2">투어메이커 상황실</h4>
+                        <p class="text-sm text-slate-600">이재명 대표 : <a href="tel:010-9443-7881" class="text-blue-600 font-bold">010-9443-7881</a></p>
+                        <p class="text-sm text-slate-600 mt-1">조혁 이사 : <a href="tel:010-4249-4026" class="text-blue-600 font-bold">010-4249-4026</a></p>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+                        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-building-flag text-red-600 text-2xl"></i></div>
+                        <span class="text-xs text-slate-400 font-bold mb-1">긴급 영사 보호</span>
+                        <h4 class="font-bold text-slate-800 text-xl mb-2">주 시드니 대한민국 총영사관</h4>
+                        <p class="text-sm text-slate-600">근무시간: +61-2-9220-6300</p>
+                        <p class="text-sm text-red-600 font-bold mt-1">야간/휴일: +61-403-546-058</p>
+                    </div>
+                </div>
+
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800">🚨 긴급상황 발생 시 대처방안</h2>
+                </div>
+
+                <div class="bg-[#fdf8f8] border border-[#f5e6e6] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8 items-start md:items-center max-w-4xl mx-auto">
+                    <div class="bg-[#c23b3b] w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 mx-auto md:mx-0"><i class="fa-solid fa-truck-medical text-white text-3xl"></i></div>
+                    <div class="flex-1 w-full">
+                        <h3 class="text-xl font-bold text-[#8b2c2c] mb-1">투어메이커 안전 매뉴얼 (T-safe24)</h3>
+                        <p class="text-slate-700 text-sm mb-4 font-medium">사용자 실행형 긴급지원 시스템으로, 현장에서 즉각적으로 활용할 수 있습니다.</p>
+                        <a href="https://indadady.github.io/T-safe24" target="_blank" class="inline-flex items-center gap-2 bg-[#c23b3b] hover:bg-[#a62d2d] text-white text-sm font-bold py-3 px-6 rounded-lg">
+                            매뉴얼 확인하기 <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ESG Dashboard Section (인쇄 숨김) -->
+        <section id="esg" class="py-16 bg-emerald-50 border-t border-emerald-100 print-hidden">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-10">
+                        <span class="inline-block bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-bold shadow-sm mb-3">
+                            <i class="fa-solid fa-leaf"></i> Eco-Friendly Tour
+                        </span>
+                        <h2 class="text-3xl font-bold text-slate-800">📊 ESG 실천 대시보드</h2>
+                    </div>
+
+                    <div class="bg-white rounded-3xl shadow-lg border border-emerald-100 p-8 md:p-10 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 -mr-10 -mt-10 opacity-10 text-emerald-600 text-9xl"><i class="fa-solid fa-earth-asia"></i></div>
+                        <div class="relative z-10">
+                            <p class="text-center text-slate-600 mb-8 text-lg font-medium">
+                                종이 일정표 대신 본 스마트 가이드북을 선택한 오늘,<br>우리는 <strong class="text-emerald-600">1인당 평균 아래의 자원을 절감</strong>하며 숲과 지구를 보호했습니다.
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-8">
+                                <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-emerald-600 text-2xl mx-auto mb-4 shadow-sm"><i class="fa-solid fa-file-lines"></i></div>
+                                    <h4 class="text-slate-500 text-sm font-bold mb-2">종이 절감</h4>
+                                    <p class="text-4xl font-black text-slate-800">8<span class="text-lg font-medium text-slate-500 ml-1">장</span></p>
+                                </div>
+                                <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-emerald-600 text-2xl mx-auto mb-4 shadow-sm"><i class="fa-solid fa-smog"></i></div>
+                                    <h4 class="text-slate-500 text-sm font-bold mb-2">탄소 배출 감소</h4>
+                                    <p class="text-4xl font-black text-slate-800">38<span class="text-lg font-medium text-slate-500 ml-1">g</span></p>
+                                </div>
+                                <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-emerald-600 text-2xl mx-auto mb-4 shadow-sm"><i class="fa-solid fa-droplet"></i></div>
+                                    <h4 class="text-slate-500 text-sm font-bold mb-2">물 절약</h4>
+                                    <p class="text-4xl font-black text-slate-800">75<span class="text-lg font-medium text-slate-500 ml-1">L</span></p>
+                                </div>
+                            </div>
+                            <!-- ESG 필수 문구 -->
+                            <div class="bg-slate-800 text-white rounded-xl p-4 text-center text-sm font-medium leading-relaxed shadow-md border border-slate-700">
+                                본 행사는 스마트 가이드북 도입을 통해 참여 인원 비례 약 <strong class="text-emerald-400 text-base">1그루</strong>의 나무를 심는 효과를 거두었으며, 디지털 전환(DX)을 통한 공공부문 에너지 절약 실천의 모범 사례입니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-[#f8f9fa] py-12 border-t border-slate-200 text-center">
+            <div class="container mx-auto px-4">
+                <div class="mb-6">
+                    <a href="http://tourmaker.kr" target="_blank" class="inline-block border border-slate-300 rounded-xl px-6 py-3 bg-white text-slate-700 font-bold hover:bg-slate-50 shadow-sm text-sm">
+                        <i class="fa-solid fa-home mr-1"></i> 투어메이커 공식 홈페이지
+                    </a>
+                </div>
+                <p class="text-[12px] md:text-[13px] text-[#6c757d] mb-4 max-w-2xl mx-auto text-center">
+                    [System Powered by TOURMAKER] 본 스마트 가이드북은 <strong class="text-slate-700">신천초등학교</strong>의 기획과 <a href="http://tourmaker.kr" target="_blank" class="font-bold text-[#6c757d] hover:text-blue-600 underline">투어메이커</a>의 트래블 테크 기술 제휴로 제작되었습니다.
+                </p>
+                <p class="text-[10px] text-slate-400">&copy; 2026 Tourmaker Inc. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <!-- END Screen Content -->
+
+    <!-- ========================================================================= -->
+    <!-- 🖨️ Print-Only Area (결재 서류용 양식) -->
+    <!-- ========================================================================= -->
+    <div id="print-area" class="hidden print:block w-full bg-white text-black py-4">
+        <div class="print-header-top">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHfgIX70O5k6Anuo0UgALIdaG9jSga9auHu3uyz0uEirylGPAJnjN_qQbvEGMUvPqUQf_g9FMNUHRxlDcUBf4vZ3Mpy4TnA9WxbmzWYK11gt2zuy_Irl4wctNFjcjLyPo0GPXV792o_J7L9guRMuDfeC1gy7USwywjYbECZgzcsHybuGRRAXAnO1eNmP8/s320/logo.png" alt="투어메이커 로고">
+            <div class="print-doc-no">문서번호: TM-261128-SCSY</div>
+        </div>
+        
+        <h1 class="print-title">
+            신천초등학교 시드니 4박 6일 문화체험 일정(안)
+        </h1>
+        
+        <div class="print-overview">
+            <div><span class="label">행사기간</span> 2026. 11. 28 (토) ~ 12. 03 (목) [4박 6일]</div>
+            <div><span class="label">참가인원</span> 총 13명 (학생 11, 인솔 2)</div>
+            <div><span class="label">출발지</span> 인천국제공항 (대한항공)</div>
+        </div>
+
+        <table id="print-table">
+            <colgroup>
+                <col>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>일차</th>
+                    <th>상세 일정</th>
+                    <th>비고/식사</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Day 1 -->
+                <tr>
+                    <td>1일차<br><span class="text-xs font-normal">(11.28)</span></td>
+                    <td>
+                        <div class="tm-time-flow"><span class="tm-time-tag">18:55</span> 인천 공항 출발 (KE401)</div>
+                        <ul class="tm-desc-list">
+                            <li>기내 탑승 및 호주로 이동, 기내 숙박 및 휴식</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <div class="tm-meal-wrapper">
+                            <div class="tm-meal-simple"><strong>조:</strong> -</div>
+                            <div class="tm-meal-simple"><strong>중:</strong> -</div>
+                            <div class="tm-meal-simple"><strong>석:</strong> 기내식</div>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Day 2 -->
+                <tr>
+                    <td>2일차<br><span class="text-xs font-normal">(11.29)</span></td>
+                    <td>
+                        <div class="tm-time-flow"><span class="tm-time-tag">오전</span> 시드니 도착 및 가이드 미팅</div>
+                        <ul class="tm-desc-list">
+                            <li>시드니 <span class="tm-highlight">반나절 동부 해안투어</span> (갭파크, 본다이 비치, 더들리 페이지)</li>
+                            <li>호주 최고 명문 <span class="tm-highlight">시드니 대학교</span> 캠퍼스 투어 (약 1시간 소요)</li>
+                            <li><span class="tm-highlight">오페라하우스 내부투어</span> 및 장엄한 세인트 메리 대성당 관람</li>
+                            <li>한식 석식 후 호텔 이동 및 휴식</li>
+                        </ul>
+                        <hr class="tm-hotel-divider">
+                        <div class="tm-hotel-info">HOTEL: Crowne Plaza Macquarie Park 또는 동급 (4성급)</div>
+                    </td>
+                    <td>
+                        <div class="tm-meal-wrapper">
+                            <div class="tm-meal-simple"><strong>조:</strong> 기내식</div>
+                            <div class="tm-meal-simple"><strong>중:</strong> 현지식</div>
+                            <div class="tm-meal-simple"><strong>석:</strong> 한식</div>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Day 3 -->
+                <tr>
+                    <td>3일차<br><span class="text-xs font-normal">(11.30)</span></td>
+                    <td>
+                        <div class="tm-time-flow"><span class="tm-time-tag">07:00</span> 호텔 조식 후 포트스테판으로 이동</div>
+                        <ul class="tm-desc-list">
+                            <li>남태평양의 야생 돌고래를 탐조하는 <span class="tm-highlight">Dolphin Cruise</span> 탑승</li>
+                            <li>사륜구동 차량 탑승 후 해안 사구로 이동 및 <span class="tm-highlight">사막 샌드보딩 체험</span></li>
+                            <li>오후 시티 복귀 후 석식 진행 및 호텔 휴식</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <div class="tm-meal-wrapper">
+                            <div class="tm-meal-simple"><strong>조:</strong> 호텔식</div>
+                            <div class="tm-meal-simple"><strong>중:</strong> 현지식</div>
+                            <div class="tm-meal-simple"><strong>석:</strong> 한식</div>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Day 4 -->
+                <tr>
+                    <td>4일차<br><span class="text-xs font-normal">(12.01)</span></td>
+                    <td>
+                        <div class="tm-time-flow"><span class="tm-time-tag">08:00</span> 블루마운틴 국립공원으로 이동</div>
+                        <ul class="tm-desc-list">
+                            <li><span class="tm-highlight">시닉월드 (Scenic World)</span> 궤도열차 탑승 및 쥬라기 시대 원시림 산림욕</li>
+                            <li>에코포인트 전망대 <span class="tm-highlight">세자매봉</span> 및 자미슨밸리 절경 감상</li>
+                            <li>호주 고유 동물(코알라 등) 관찰 <span class="tm-highlight">시드니 주 (Sydney Zoo)</span> 관람</li>
+                            <li>인터내셔널 뷔페 석식 후 호텔 휴식</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <div class="tm-meal-wrapper">
+                            <div class="tm-meal-simple"><strong>조:</strong> 호텔식</div>
+                            <div class="tm-meal-simple"><strong>중:</strong> 현지식</div>
+                            <div class="tm-meal-simple"><strong>석:</strong> 뷔페식</div>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Day 5 -->
+                <tr>
+                    <td>5일차<br><span class="text-xs font-normal">(12.02)</span></td>
+                    <td>
+                        <div class="tm-time-flow"><span class="tm-time-tag">09:00</span> 호텔 출발, 시드니 시내 랜드마크 투어</div>
+                        <ul class="tm-desc-list">
+                            <li>오페라하우스(외관), 하버 브릿지, <span class="tm-highlight">미시즈 매쿼리스 포인트</span> 조망</li>
+                            <li>시드니 핫플레이스 <span class="tm-highlight">바랑가루 또는 피쉬마켓</span> 및 시드니 천문대 언덕 산책</li>
+                            <li><span class="tm-highlight">선셋 디너 크루즈</span> (18:00): 시드니 하버 선상 디너 만찬 즐기기</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <div class="tm-meal-wrapper">
+                            <div class="tm-meal-simple"><strong>조:</strong> 호텔식</div>
+                            <div class="tm-meal-simple"><strong>중:</strong> 현지식</div>
+                            <div class="tm-meal-simple"><strong>석:</strong> 선상식</div>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Day 6 -->
+                <tr>
+                    <td>6일차<br><span class="text-xs font-normal">(12.03)</span></td>
+                    <td>
+                        <div class="tm-time-flow"><span class="tm-time-tag">오전</span> 가이드 미팅 후 공항 이동 및 수속</div>
+                        <div class="tm-time-flow"><span class="tm-time-tag">09:10</span> 시드니 국제공항 출발 (KE402)</div>
+                        <div class="tm-time-flow"><span class="tm-time-tag">오후</span> 인천 국제공항 도착 및 안전하게 해산</div>
+                    </td>
+                    <td>
+                        <div class="tm-meal-wrapper">
+                            <div class="tm-meal-simple"><strong>조:</strong> 호텔식</div>
+                            <div class="tm-meal-simple"><strong>중:</strong> 기내식</div>
+                            <div class="tm-meal-simple"><strong>석:</strong> -</div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="mt-4 text-xs text-right text-slate-600">
+            ※ 상기 일정은 현지 사정 및 항공 상황에 의해 다소 변경될 수 있습니다.
+        </div>
+        
+        <div class="print-footer-area mt-8">
+            <div class="text-sm text-slate-500 font-bold">[System Powered by TOURMAKER]</div>
+            <div class="manager">비상연락망: 투어메이커 이재명 대표 (010-9443-7881)</div>
         </div>
     </div>
-</section>
-</main>
+    <!-- END Print-Only Area -->
 
-<footer class="py-12 bg-slate-800 text-slate-400 text-center">
-    <div class="container mx-auto px-4">
-        <a href="http://tourmaker.kr" target="_blank" rel="noopener" class="inline-block mb-4 opacity-70 hover:opacity-100 transition">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgHfgIX70O5k6Anuo0UgALIdaG9jSga9auHu3uyz0uEirylGPAJnjN_qQbvEGMUvPqUQf_g9FMNUHRxlDcUBf4vZ3Mpy4TnA9WxbmzWYK11gt2zuy_Irl4wctNFjcjLyPo0GPXV792o_J7L9guRMuDfeC1gy7USwywjYbECZgzcsHybuGRRAXAnO1eNmP8/s320/logo.png" alt="Tourmaker" class="h-6 inline" style="filter: brightness(0) invert(1);">
-        </a>
-        <p class="text-xs max-w-lg mx-auto leading-relaxed">
-            [System Powered by TOURMAKER]<br>
-            본 스마트 가이드북은 <strong>영월신천초등학교</strong> 전용으로 제작되었습니다.<br>
-            &copy; 2024-2026 TOURMAKER. All rights reserved.
-        </p>
-    </div>
-</footer>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    // 1. D-Day Calculator
-    const badge = document.getElementById('d-day-badge');
-    const today = new Date(); 
-    today.setHours(0,0,0,0);
-    const dep = new Date('2026-11-28T00:00:00'); 
-    dep.setHours(0,0,0,0);
-    const diff = Math.ceil((dep - today) / 86400000);
-    
-    if (diff > 0) {
-        badge.innerHTML = '<i class="fa-regular fa-clock"></i> 출국 D-' + diff;
-    } else if (diff === 0) { 
-        badge.innerHTML = '<i class="fa-solid fa-plane-departure"></i> 출국일입니다!'; 
-        badge.classList.replace('bg-emerald-600','bg-orange-600'); 
-    } else { 
-        badge.textContent = '일정 종료'; 
-        badge.classList.replace('bg-emerald-600','bg-slate-600'); 
-    }
-
-    // 2. Memo Auto-save Logic
-    const memo = document.getElementById('travel-memo');
-    const stat = document.getElementById('save-status');
-    const memoKey = 'sincheon_sydney_memo_2026';
-    const saved = localStorage.getItem(memoKey);
-    if (saved) memo.value = saved;
-    
-    let timeout;
-    memo.addEventListener('input', function () {
-        clearTimeout(timeout);
-        stat.textContent = '저장 중...';
-        stat.className = 'text-xs text-orange-500 mt-2 font-medium';
-        
-        timeout = setTimeout(() => {
-            localStorage.setItem(memoKey, this.value);
-            stat.innerHTML = '<i class="fa-solid fa-check"></i> 자동 저장됨 (' + new Date().toLocaleTimeString().slice(0, -3) + ')';
-            stat.className = 'text-xs text-emerald-600 mt-2 font-medium';
-        }, 800);
-    });
-
-    // 3. Checklist Logic
-    const items = [
-        { id: 'chk_passport', text: '참가자 전원 여권 사본(유효기간 6개월 이상) 확인' },
-        { id: 'chk_eta', text: '호주 전자비자(ETA) 발급 완료' },
-        { id: 'chk_insure', text: '해외 여행자 보험 단체 가입' },
-        { id: 'chk_info', text: '학생/학부모 대상 세부 일정표 배포' },
-        { id: 'chk_ot', text: '출발 전 안전 및 문화체험 사전 교육(OT) 실시' },
-        { id: 'chk_diet', text: '알러지 및 특이 식단 필요 학생 가이드 전달' }
-    ];
-    const box = document.getElementById('checklist-container');
-    items.forEach(function (it) {
-        const d = document.createElement('div');
-        d.className = 'flex items-start gap-3 p-3 bg-slate-50 hover:bg-emerald-50/50 rounded-xl border border-slate-200 text-sm transition';
-        d.innerHTML = '<input type="checkbox" id="' + it.id + '" class="mt-1 h-4 w-4 text-emerald-600 rounded cursor-pointer"><label for="' + it.id + '" class="cursor-pointer select-none flex-1 leading-relaxed text-slate-700">' + it.text + '</label>';
-        box.appendChild(d);
-        
-        const cb = d.querySelector('input');
-        cb.checked = localStorage.getItem(it.id) === 'true';
-        if(cb.checked) d.classList.add('opacity-60');
-        
-        cb.addEventListener('change', function (e) { 
-            localStorage.setItem(it.id, e.target.checked); 
-            if(e.target.checked) d.classList.add('opacity-60');
-            else d.classList.remove('opacity-60');
-        });
-    });
-    
-    window.resetChecklist = function () {
-        if (!confirm('체크리스트를 모두 초기화하시겠습니까?')) return;
-        items.forEach(function (it) {
-            localStorage.removeItem(it.id);
-            const cb = document.getElementById(it.id);
-            cb.checked = false;
-            cb.parentElement.classList.remove('opacity-60');
-        });
-    };
-
-    // 4. Map Logic (Leaflet)
-    const mapData = {
-        center: [-33.7, 151.0], zoom: 9,
-        locs: {
-            syd:   { name: '시드니 공항 (출도착)', lat: -33.9399, lng: 151.1753, icon: 'fa-plane', color: '#475569' },
-            bondi: { name: '본다이/동부 (DAY2)', lat: -33.8915, lng: 151.2767, icon: 'fa-umbrella-beach', color: '#10b981' },
-            uni:   { name: '시드니 대학교 (DAY2)', lat: -33.8886, lng: 151.1873, icon: 'fa-graduation-cap', color: '#10b981' },
-            port:  { name: '포트스테판 (DAY3)', lat: -32.7233, lng: 152.0583, icon: 'fa-ship', color: '#0ea5e9' },
-            blue:  { name: '블루마운틴/시닉월드 (DAY4)', lat: -33.728, lng: 150.301, icon: 'fa-mountain', color: '#8b5cf6' },
-            zoo:   { name: '시드니 주 (DAY4)', lat: -33.785, lng: 150.865, icon: 'fa-hippo', color: '#8b5cf6' },
-            opera: { name: '시티투어/오페라 (DAY5)', lat: -33.8568, lng: 151.2153, icon: 'fa-building', color: '#f59e0b' },
-            cruise:{ name: '디너 크루즈 (DAY5)', lat: -33.861, lng: 151.201, icon: 'fa-utensils', color: '#f59e0b' },
-            hotel: { name: 'Crowne Plaza (숙소)', lat: -33.778, lng: 151.119, icon: 'fa-bed', color: '#ef4444' }
-        },
-        routes: [
-            { id: 'all', label: '전체 보기', path: ['syd','bondi','uni','hotel','port','hotel','blue','zoo','hotel','opera','cruise','syd'], color: '#94a3b8' },
-            { id: 'd2', label: 'DAY 2 동부', path: ['syd','bondi','uni','hotel'], color: '#10b981' },
-            { id: 'd3', label: 'DAY 3 포트스테판', path: ['hotel','port','hotel'], color: '#0ea5e9' },
-            { id: 'd4', label: 'DAY 4 블루마운틴', path: ['hotel','blue','zoo','hotel'], color: '#8b5cf6' },
-            { id: 'd5', label: 'DAY 5 시티/크루즈', path: ['hotel','opera','cruise','hotel'], color: '#f59e0b' }
-        ]
-    };
-
-    let map, polylines = [], markers = [];
-
-    function initMap() {
-        const el = document.getElementById('routeMap');
-        if (!el) return;
-        
-        map = L.map(el, { scrollWheelZoom: false }).setView(mapData.center, mapData.zoom);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO'
-        }).addTo(map);
-
-        const ctrl = document.getElementById('map-controls');
-        mapData.routes.forEach(function (r) {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'map-btn px-4 py-2 rounded-full border text-sm font-bold bg-white text-slate-600 border-slate-300 hover:bg-slate-50 transition shadow-sm';
-            btn.textContent = r.label;
-            btn.onclick = function () { drawRoute(r.id); };
-            ctrl.appendChild(btn);
-        });
-        
-        drawRoute('all'); // Default view
-    }
-
-    function drawRoute(routeId) {
-        // Clear existing
-        polylines.forEach(function (p) { map.removeLayer(p); });
-        markers.forEach(function (m) { map.removeLayer(m); });
-        polylines = []; markers = [];
-
-        const r = mapData.routes.find(function (x) { return x.id === routeId; });
-        if (!r) return;
-
-        const latlngs = r.path.map(function (id) {
-            const loc = mapData.locs[id];
-            return [loc.lat, loc.lng];
-        });
-
-        // Draw Line
-        if (latlngs.length > 1) {
-            const poly = L.polyline(latlngs, { 
-                color: r.color, weight: 4, opacity: 0.8, className: 'solid-path' 
-            }).addTo(map);
-            polylines.push(poly);
-        }
-
-        // Draw Markers
-        const seen = {};
-        r.path.forEach(function (id) {
-            if (seen[id]) return; // Only add one marker per location per route
-            seen[id] = true;
+    <!-- Scripts -->
+    <script>
+        // -----------------------------------------
+        // 1. D-Day 및 동적 타이틀 로직 (행사일: 26.11.28 ~ 26.12.03)
+        // -----------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            const startDate = new Date('2026-11-28T00:00:00+09:00');
+            const endDate = new Date('2026-12-03T23:59:59+09:00');
+            const now = new Date();
+            const groupName = '신천초등학교';
             
-            const loc = mapData.locs[id];
-            const icon = L.divIcon({
-                className: '',
-                html: '<div class="map-marker-custom" style="background:' + loc.color + ';width:36px;height:36px;"><i class="fa-solid ' + loc.icon + '"></i></div>',
-                iconSize: [36, 36], iconAnchor: [18, 18]
-            });
-            const m = L.marker([loc.lat, loc.lng], { icon: icon })
-                .bindTooltip(loc.name, { direction: 'top', offset: [0, -15], className: 'font-bold' })
-                .addTo(map);
-            markers.push(m);
-        });
-
-        // Fit bounds
-        if (latlngs.length) {
-            map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50], maxZoom: 12 });
-        }
-
-        // Button Styling
-        document.querySelectorAll('.map-btn').forEach(function (btn) {
-            if (btn.textContent === r.label) {
-                btn.className = 'map-btn px-4 py-2 rounded-full border text-sm font-bold bg-emerald-600 text-white border-emerald-600 shadow-md transition';
+            const badge = document.getElementById('d-day-badge');
+            const titleContainer = document.getElementById('hero-title-container');
+            const infoBox = document.getElementById('hero-info-box');
+            
+            // 날짜 차이 계산
+            const diffStart = Math.ceil((startDate - now) / (1000*60*60*24));
+            
+            badge.classList.remove('hidden');
+            
+            if (now > endDate) {
+                // 행사 후
+                badge.textContent = '🏁 여정 종료';
+                badge.className = 'bg-slate-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold inline-block ml-2';
+                titleContainer.innerHTML = `<h1 class="text-3xl md:text-5xl font-bold mb-4 drop-shadow-2xl font-[Nanum Myeongjo] leading-tight text-yellow-400">모든 여정이 종료되었습니다.<br>좋은 추억으로 오래 간직되길 바랍니다.</h1>`;
+                if(infoBox) infoBox.style.display = 'none';
+            } else if (now >= startDate && now <= endDate) {
+                // 행사 중
+                const currentDay = Math.floor((now - startDate) / (1000*60*60*24)) + 1;
+                badge.textContent = `📍 ${currentDay}일차 진행중`;
+                badge.className = 'bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse inline-block ml-2';
+                titleContainer.innerHTML = `<h1 class="text-3xl md:text-5xl font-bold mb-4 drop-shadow-2xl font-[Nanum Myeongjo] leading-tight">현재 <span class="text-yellow-400">${groupName}</span>의<br>${currentDay}일차 여정이 활기차게 진행되고 있습니다.</h1>`;
             } else {
-                btn.className = 'map-btn px-4 py-2 rounded-full border text-sm font-bold bg-white text-slate-600 border-slate-300 hover:bg-slate-50 transition shadow-sm';
+                // 행사 전
+                badge.textContent = diffStart === 0 ? 'D-DAY' : `D-${diffStart}`;
+                badge.className = 'bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse inline-block ml-2';
             }
         });
-    }
 
-    // Initialize map with a slight delay to ensure container is rendered properly
-    setTimeout(initMap, 500);
-});
-</script>
+        // -----------------------------------------
+        // 2. Tab & UI Logic
+        // -----------------------------------------
+        function openTab(evt, tabId){
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active','bg-blue-600','text-white','border-blue-600','shadow-md');
+                btn.classList.add('bg-white','text-slate-500','border-slate-200');
+            });
+            document.getElementById(tabId)?.classList.remove('hidden');
+            if(evt) {
+                evt.currentTarget.classList.add('active','bg-blue-600','text-white','border-blue-600','shadow-md');
+                evt.currentTarget.classList.remove('bg-white','text-slate-500','border-slate-200');
+            }
+        }
+
+        function shareLink(){
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: '[신천초등학교] 시드니 탐방', text: '4박 6일 탐방 일정 및 가이드입니다.', url: url }).catch(()=>{});
+            } else {
+                navigator.clipboard?.writeText(url).then(()=>alert('가이드북 링크가 복사되었습니다.'));
+            }
+        }
+
+        // -----------------------------------------
+        // 3. 서바이벌 회화 모달 로직 (호주 영어 적용)
+        // -----------------------------------------
+        function showPhrase(kr, local, pron, emoji) {
+            document.getElementById('phrase-emoji').innerText = emoji;
+            document.getElementById('phrase-kr').innerText = kr;
+            document.getElementById('phrase-pron').innerText = '[' + pron + ']';
+            document.getElementById('phrase-local').innerText = local;
+            document.getElementById('phrase-modal').classList.remove('hidden');
+        }
+        function closePhrase() {
+            document.getElementById('phrase-modal').classList.add('hidden');
+        }
+
+        // -----------------------------------------
+        // 4. 환율 & 물가 계산 (호주 달러 기준, 수수료 1.5% 반영)
+        // -----------------------------------------
+        let audRate = 900; // API 로드 전 초기값
+        
+        async function fetchExchange() {
+            try {
+                const response = await fetch('https://open.er-api.com/v6/latest/AUD');
+                const data = await response.json();
+                audRate = data.rates.KRW * 1.015; // 1.5% 송금 수수료 반영
+                renderPrices();
+            } catch(e) { renderPrices(); }
+        }
+
+        function calcKRW() {
+            const audInput = document.getElementById('aud-input').value;
+            const krwOutput = document.getElementById('krw-output');
+            
+            if(audInput && audInput > 0) {
+                const krw = Math.round(audInput * audRate);
+                krwOutput.innerHTML = krw.toLocaleString() + ' <span class="text-lg font-bold text-white">원</span>';
+            } else {
+                krwOutput.innerHTML = '0 <span class="text-lg font-bold text-white">원</span>';
+            }
+        }
+
+        function renderPrices() {
+            const items = [
+                {n: "롱블랙(아메리카노)", p: 5.5, i: "fa-mug-hot", c: "text-amber-700"},
+                {n: "편의점 생수(600ml)", p: 3.5, i: "fa-bottle-water", c: "text-blue-400"},
+                {n: "맥도날드 빅맥 세트", p: 13.5, i: "fa-burger", c: "text-orange-500"},
+                {n: "트레인 기본료(오팔)", p: 4.0, i: "fa-train-subway", c: "text-slate-500"},
+                {n: "푸드코트 한끼 식사", p: 18.0, i: "fa-bowl-food", c: "text-red-500"}
+            ];
+            const container = document.getElementById('price-list');
+            container.innerHTML = items.map(item => `
+                <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-sm font-bold text-slate-700"><i class="fa-solid ${item.i} ${item.c} w-5"></i> ${item.n}</span>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400">약 $${item.p}</span>
+                        <span class="text-sm font-bold text-blue-600 ml-2">약 ${Math.round(item.p * audRate).toLocaleString()}원</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        fetchExchange();
+
+        // -----------------------------------------
+        // 5. 실시간 날씨 위젯 (Open-Meteo for Sydney)
+        // -----------------------------------------
+        function getWeatherIconAndDesc(code) {
+            let iconClass = "fa-solid fa-cloud-sun text-amber-400";
+            let desc = "맑음/구름조금";
+            if (code === 0) { iconClass = "fa-solid fa-sun text-yellow-400"; desc = "맑음"; }
+            else if (code >= 1 && code <= 3) { iconClass = "fa-solid fa-cloud-sun text-amber-400"; desc = "구름조금"; }
+            else if (code >= 45 && code <= 48) { iconClass = "fa-solid fa-smog text-slate-400"; desc = "안개"; }
+            else if (code >= 51 && code <= 67) { iconClass = "fa-solid fa-cloud-rain text-blue-400"; desc = "비"; }
+            else if (code >= 71 && code <= 77) { iconClass = "fa-solid fa-snowflake text-sky-300"; desc = "눈"; }
+            else if (code >= 80 && code <= 82) { iconClass = "fa-solid fa-cloud-showers-heavy text-blue-500"; desc = "소나기"; }
+            else if (code >= 95) { iconClass = "fa-solid fa-cloud-bolt text-purple-500"; desc = "천둥번개"; }
+            return { iconClass, desc };
+        }
+
+        async function fetchSydneyWeather() {
+            try {
+                // 시드니 좌표
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.8688&longitude=151.2093&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Australia%2FSydney');
+                const data = await res.json();
+                
+                const weather = data.current_weather;
+                const temp = Math.round(weather.temperature);
+                const info = getWeatherIconAndDesc(weather.weathercode);
+
+                document.getElementById('current-temp').innerText = `${temp}°C`;
+                document.getElementById('current-desc').innerText = info.desc;
+                document.getElementById('current-icon').innerHTML = `<i class="${info.iconClass}"></i>`;
+                
+                const now = new Date();
+                document.getElementById('weather-time').innerText = `${now.getMonth()+1}.${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} 기준`;
+
+                const daily = data.daily;
+                let forecastHTML = '';
+                const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+                
+                for(let i=0; i<7; i++) {
+                    const dateObj = new Date(daily.time[i]);
+                    const dInfo = getWeatherIconAndDesc(daily.weathercode[i]);
+                    forecastHTML += `
+                        <div class="flex-shrink-0 w-16 bg-slate-800/60 rounded-xl py-2 flex flex-col items-center border border-slate-700/50">
+                            <span class="text-[10px] text-slate-400 font-bold mb-1">${dateObj.getMonth()+1}/${dateObj.getDate()}(${daysOfWeek[dateObj.getDay()]})</span>
+                            <span class="text-xl mb-1"><i class="${dInfo.iconClass}"></i></span>
+                            <span class="text-[10px] font-bold tracking-tighter"><span class="text-sky-400">${Math.round(daily.temperature_2m_min[i])}</span><span class="text-slate-600 mx-0.5">/</span><span class="text-red-400">${Math.round(daily.temperature_2m_max[i])}</span></span>
+                        </div>
+                    `;
+                }
+                document.getElementById('weekly-forecast').innerHTML = forecastHTML;
+            } catch (error) {
+                console.error("날씨 정보 로드 실패", error);
+                document.getElementById('current-temp').innerText = "-°C";
+                document.getElementById('weather-time').innerText = "정보 없음";
+            }
+        }
+        document.addEventListener('DOMContentLoaded', fetchSydneyWeather);
+
+        // -----------------------------------------
+        // 6. Map Logic (지도 5원칙 적용, 시드니용)
+        // -----------------------------------------
+        let map;
+        let layerGroup; // 마커 및 폴리라인 관리용
+        let mapInited = false;
+
+        const spots = {
+            syd: { coords: [-33.9399, 151.1753], title: "시드니 공항", color: "#64748b", icon: "✈️" },
+            syd_hotel: { coords: [-33.7781, 151.1192], title: "호텔(마쿼리파크)", color: "#1e293b", icon: "🏨" },
+            bondi: { coords: [-33.8915, 151.2767], title: "본다이 비치", color: "#10b981", icon: "🏖️" },
+            uni: { coords: [-33.8886, 151.1873], title: "시드니 대학", color: "#3b82f6", icon: "🎓" },
+            opera: { coords: [-33.8568, 151.2153], title: "오페라하우스", color: "#f59e0b", icon: "🏛️" },
+            port: { coords: [-32.7233, 152.0583], title: "포트스테판", color: "#0ea5e9", icon: "🐬" },
+            blue: { coords: [-33.728, 150.301], title: "블루마운틴", color: "#8b5cf6", icon: "⛰️" },
+            zoo: { coords: [-33.785, 150.865], title: "동물원", color: "#d97706", icon: "🐨" },
+            cruise: { coords: [-33.861, 151.201], title: "디너 크루즈", color: "#db2777", icon: "🚢" }
+        };
+
+        const routes = {
+            all: {
+                points: ['syd', 'bondi', 'uni', 'syd_hotel', 'port', 'blue', 'zoo', 'opera', 'cruise'],
+                lines: [
+                    { latlngs: [spots.syd.coords, spots.bondi.coords, spots.uni.coords, spots.opera.coords, spots.syd_hotel.coords], color: '#10b981' },
+                    { latlngs: [spots.syd_hotel.coords, spots.port.coords, spots.syd_hotel.coords], color: '#0ea5e9' },
+                    { latlngs: [spots.syd_hotel.coords, spots.blue.coords, spots.zoo.coords, spots.syd_hotel.coords], color: '#8b5cf6' },
+                    { latlngs: [spots.syd_hotel.coords, spots.opera.coords, spots.cruise.coords, spots.syd_hotel.coords], color: '#f59e0b' },
+                    { latlngs: [spots.syd_hotel.coords, spots.syd.coords], color: '#64748b' }
+                ]
+            },
+            day2: {
+                points: ['syd', 'bondi', 'uni', 'opera', 'syd_hotel'],
+                lines: [{ latlngs: [spots.syd.coords, spots.bondi.coords, spots.uni.coords, spots.opera.coords, spots.syd_hotel.coords], color: '#10b981' }]
+            },
+            day3: {
+                points: ['syd_hotel', 'port'],
+                lines: [{ latlngs: [spots.syd_hotel.coords, spots.port.coords, spots.syd_hotel.coords], color: '#0ea5e9' }]
+            },
+            day4: {
+                points: ['syd_hotel', 'blue', 'zoo'],
+                lines: [{ latlngs: [spots.syd_hotel.coords, spots.blue.coords, spots.zoo.coords, spots.syd_hotel.coords], color: '#8b5cf6' }]
+            },
+            day5: {
+                points: ['syd_hotel', 'opera', 'cruise'],
+                lines: [{ latlngs: [spots.syd_hotel.coords, spots.opera.coords, spots.cruise.coords, spots.syd_hotel.coords], color: '#f59e0b' }]
+            }
+        };
+
+        function drawMap(routeKey) {
+            if (!map) return;
+            // 지도 5원칙 4. 탭전환: layerGroup.clearLayers() 선행 필수
+            layerGroup.clearLayers();
+            
+            const routeData = routes[routeKey];
+            if (!routeData) return;
+            
+            // 지도 5원칙 3. 선 애니메이션 적용
+            routeData.lines.forEach((lineDef) => {
+                const polyline = L.polyline(lineDef.latlngs, { color: lineDef.color, weight: 4, opacity: 0.8 }).addTo(layerGroup);
+                setTimeout(() => {
+                    const path = polyline.getElement();
+                    if (path) { 
+                        const length = path.getTotalLength();
+                        path.style.transition = 'none';
+                        path.style.strokeDasharray = length + ' ' + length;
+                        path.style.strokeDashoffset = length;
+                        path.getBoundingClientRect(); // 리플로우 강제
+                        path.style.transition = 'stroke-dashoffset 2s ease-in-out';
+                        path.style.strokeDashoffset = '0';
+                    }
+                }, 50);
+            });
+
+            // 지도 5원칙 1 & 5. 마커 애니메이션 및 툴팁
+            let bounds = L.latLngBounds();
+            routeData.points.forEach((key, idx) => {
+                const spot = spots[key];
+                if(spot) {
+                    const iconHtml = `<div class="map-marker-anim" style="animation: popIn 0.5s forwards; animation-delay: ${idx * 0.2}s; background-color:${spot.color}; width:28px; height:28px; border-radius:50%; border:2px solid white; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; box-shadow:0 2px 5px rgba(0,0,0,0.3);">${spot.icon}</div>`;
+                    const icon = L.divIcon({ className: 'custom-icon', html: iconHtml, iconSize: [28, 28] });
+                    
+                    L.marker(spot.coords, {icon: icon})
+                     .bindTooltip(`<b>${spot.title}</b>`, {direction: 'top', offset: [0, -10]})
+                     .addTo(layerGroup);
+                    
+                    bounds.extend(spot.coords);
+                }
+            });
+            
+            // 지도 5원칙 2. 안정화: fitBounds 후 대기
+            if (Object.keys(bounds).length > 0 && bounds.isValid()) {
+                setTimeout(() => {
+                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 11 });
+                }, 300);
+            }
+        }
+
+        function changeMapRoute(dayKey) {
+            document.querySelectorAll('.map-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-slate-800', 'text-white', 'shadow-md');
+                btn.classList.add('bg-white', 'text-slate-600');
+            });
+            const clickedBtn = document.querySelector(`.map-btn[onclick="changeMapRoute('${dayKey}')"]`);
+            if(clickedBtn){
+                clickedBtn.classList.add('active', 'bg-slate-800', 'text-white', 'shadow-md');
+                clickedBtn.classList.remove('bg-white', 'text-slate-600');
+            }
+            drawMap(dayKey);
+        }
+
+        function initMap(){
+            if(mapInited || !window.L) return;
+            mapInited = true;
+            map = L.map('map', { scrollWheelZoom:false });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+            layerGroup = L.layerGroup().addTo(map);
+            
+            // PC면 전체 지도, 모바일이면 day2(시드니 입성일)부터 보여주기
+            const initView = window.innerWidth < 768 ? 'day2' : 'all';
+            changeMapRoute(initView);
+        }
+
+        const io = new IntersectionObserver((entries)=>{
+            if(entries[0].isIntersecting) { initMap(); io.disconnect(); }
+        }, { threshold: 0.1 });
+        io.observe(document.getElementById('map-section'));
+
+        // -----------------------------------------
+        // 7. Checklist & Memo
+        // -----------------------------------------
+        const CHECK_KEY = 'sincheon_sydney_checklist_v3'; 
+        const CHECK_ITEMS = [
+            '여권 (유효기간 6개월 이상 필수 확인)', '호주 전자비자(ETA) 발급 완료', '자외선 차단제, 선글라스, 모자 (자외선 강함)',
+            '개인 상비약 (소화제, 지사제, 멀미약, 밴드)', '호주 달러(AUD) 환전 (소액 비상금)',
+            '걷기 편한 운동화 (투어 이동 필수)', '멀티 어댑터 (호주용 8자/삼구형)', '얇은 가디건/바람막이 (에어컨 대비)'
+        ];
+
+        function renderChecklist(){
+            const container = document.getElementById('checklist-container');
+            if(!container) return;
+            const saved = JSON.parse(localStorage.getItem(CHECK_KEY) || '{}');
+            container.innerHTML = CHECK_ITEMS.map((label, idx) => {
+                const id = `chk_${idx}`;
+                const checked = saved[id] ? 'checked' : '';
+                return `
+                    <label class="flex items-center gap-3 bg-white border border-blue-50 rounded-xl px-4 py-3 cursor-pointer hover:bg-blue-50 transition shadow-sm">
+                        <input type="checkbox" id="${id}" ${checked} class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500 border-slate-300">
+                        <span class="text-sm font-medium text-slate-700">${label}</span>
+                    </label>
+                `;
+            }).join('');
+
+            container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const currentSaved = JSON.parse(localStorage.getItem(CHECK_KEY) || '{}');
+                    currentSaved[cb.id] = cb.checked;
+                    localStorage.setItem(CHECK_KEY, JSON.stringify(currentSaved));
+                });
+            });
+        }
+        
+        function resetChecklist(){
+            if(confirm('체크리스트를 초기화하시겠습니까?')){
+                localStorage.removeItem(CHECK_KEY);
+                renderChecklist();
+            }
+        }
+        renderChecklist();
+
+        (function(){
+            const memo = document.getElementById('travel-memo');
+            if(!memo) return;
+            const KEY = 'sincheon_sydney_memo_v3'; 
+            const autoResize = () => { memo.style.height = 'auto'; memo.style.height = memo.scrollHeight + 'px'; };
+            memo.value = localStorage.getItem(KEY) || '';
+            setTimeout(autoResize, 0);
+            memo.addEventListener('input', () => { localStorage.setItem(KEY, memo.value); autoResize(); });
+            window.addEventListener('resize', autoResize);
+        })();
+    </script>
 </body>
 </html>
